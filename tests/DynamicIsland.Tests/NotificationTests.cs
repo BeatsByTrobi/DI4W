@@ -38,6 +38,13 @@ public class NotificationTests
         Assert.False(NotificationPresenter.IsCall(new IncomingNotification("Discord", title, body, null)));
 
     [Theory]
+    [InlineData("Anna de Vries", "AV")]
+    [InlineData("sam", "S")]
+    [InlineData("+31 6 12345678", "")]
+    public void Callers_get_initials_like_iOS_contacts(string name, string expected) =>
+        Assert.Equal(expected, NotificationPresenter.Initials(name));
+
+    [Theory]
     [InlineData(@"C:\Downloads\photo.jpg.crdownload", "photo.jpg")]
     [InlineData(@"C:\Downloads\setup.exe.part", "setup.exe")]
     [InlineData(@"C:\Downloads\Unconfirmed 123456.crdownload", "New download")]

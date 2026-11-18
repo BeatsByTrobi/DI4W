@@ -33,7 +33,7 @@ public sealed partial class NotificationPresenter
 
         if (_settings.Addons.Calls && (preset?.HasCalls ?? false) && IsCall(n))
         {
-            ShowCall(n, preset!.Name, icon, Open);
+            ShowCall(n, preset!.Name, Open);
             return;
         }
 
@@ -43,17 +43,18 @@ public sealed partial class NotificationPresenter
             Size = new Size(Ui.AlertWidth, string.IsNullOrEmpty(n.Body) || n.Body.Length < 40 ? Ui.AlertHeight : 100),
             Duration = TimeSpan.FromSeconds(5),
             OnClick = Open,
+            Keyline = color.Color,
         });
     }
 
-    private void ShowCall(IncomingNotification n, string app, FrameworkElement icon, Action open)
+    private void ShowCall(IncomingNotification n, string app, Action open)
     {
         // The caller is usually the title; some apps put "Incoming call" there and the name in the body.
         var caller = CallPattern().IsMatch(n.Title) && !string.IsNullOrWhiteSpace(n.Body) ? n.Body : n.Title;
         IslandAlert? alert = null;
 
-        var decline = Ui.CircleButton(Ui.Glyph("", 18, Ui.OnColor), Ui.Red, 44, () => _manager.DismissAlert(alert), L.T("Decline"));
-        var answer = Ui.CircleButton(Ui.Glyph("", 18, Ui.OnColor), Ui.Green, 44, () =>
+        var decline = Ui.CircleButton(Ui.Glyph("", 20, Ui.OnColor), Ui.Red, 48, () => _manager.DismissAlert(alert), L.T("Decline"));
+        var answer = Ui.CircleButton(Ui.Glyph("", 20, Ui.OnColor), Ui.Green, 48, () =>
         {
             open();
             _manager.DismissAlert(alert);
@@ -63,11 +64,44 @@ public sealed partial class NotificationPresenter
 
         alert = new IslandAlert
         {
-            Content = Ui.AlertView(icon, caller, L.F("Incoming call · {0}", app), accessory: buttons),
+            // Laid out like the iPhone's incoming call: the caller's initials, the name, and the red and green buttons.
+            Content = Ui.AlertView(Avatar(caller), caller, L.F("Incoming call · {0}", app), accessory: buttons),
             Duration = TimeSpan.FromSeconds(30),
+            Keyline = Ui.Green.Color,
             OnClick = open,
         };
         _manager.ShowAlert(alert);
+    }
+
+    /// <summary>A contact picture the way iOS draws one without a photo: initials on a grey gradient circle.</summary>
+    internal static FrameworkElement Avatar(string name)
+    {
+        var initials = Initials(name);
+        var circle = new Border
+        {
+            Width = Ui.IconSize,
+            Height = Ui.IconSize,
+            CornerRadius = new CornerRadius(Ui.IconSize / 2),
+            Background = new System.Windows.Media.LinearGradientBrush(
+                System.Windows.Media.Color.FromRgb(0xA5, 0xA9, 0xB4), System.Windows.Media.Color.FromRgb(0x84, 0x88, 0x93), 90),
+        };
+        circle.Child = initials.Length > 0
+            ? new TextBlock
+            {
+                Text = initials, FontFamily = Ui.Font, FontSize = 21, FontWeight = FontWeights.SemiBold, Foreground = Ui.OnColor,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+            }
+            : Ui.Glyph("\uE77B", 24, Ui.OnColor); // Contact
+        return circle;
+    }
+
+    /// <summary>"Anna de Vries" -> "AV", "sam" -> "S"; nothing for names without letters (a phone number).</summary>
+    internal static string Initials(string name)
+    {
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetter(w[0])).ToList();
+        if (words.Count == 0) return "";
+        var first = char.ToUpper(words[0][0]);
+        return words.Count == 1 ? first.ToString() : $"{first}{char.ToUpper(words[^1][0])}";
     }
 
     /// <summary>Call notifications from the supported apps, in English, Dutch, German and French (apps write them in
