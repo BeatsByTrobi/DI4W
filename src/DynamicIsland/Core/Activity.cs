@@ -49,6 +49,9 @@ public abstract class Activity
     public virtual Color? Keyline => null;
 
     public virtual double CompactWidth => 230;
+
+    /// <summary>Width of the minimal view's spot: a 37 circle, up to a 45 wide oval for text such as a countdown.</summary>
+    public virtual double MinimalWidth => 37;
     public virtual Size ExpandedSize => new(371, 160);
 
     protected void RaiseChanged() => Changed?.Invoke();

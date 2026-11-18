@@ -95,7 +95,7 @@ public partial class IslandWindow : Window
 
         _driver = new SpringDriver(ApplyFrame, _width, _height, _radius, _bubble, _press);
 
-        Pill.Background = Bubble.Background = Ui.PillBackground;
+        Pill.Background = Bubble.Background = Neck.Fill = Ui.PillBackground;
         // The light island gets a soft shadow in its own color, so it doesn't melt into white pages; the dark one is
         // pure black like Apple's, set apart from dark backgrounds only by the key line.
         if (Palette.Light)
@@ -328,15 +328,13 @@ public partial class IslandWindow : Window
         else if (primary is not null)
         {
             mode = Mode.Compact;
-            target = new Size(primary.CompactWidth, CompactHeight);
-            key = primary;
-            if (!ReferenceEquals(LeadingHost.Content, primary.Leading))
-            {
-                LeadingHost.Content = null;
-                TrailingHost.Content = null;
-                LeadingHost.Content = primary.Leading;
-                TrailingHost.Content = primary.Trailing;
-            }
+            // Two at once, as on the iPhone: the first shows its minimal view attached to the island's leading side,
+            // the second its minimal view in a detached bubble. One alone gets the full compact leading + trailing.
+            var split = _secondary is not null;
+            target = split ? new Size(IdleWidth + primary.MinimalWidth, CompactHeight) : new Size(primary.CompactWidth, CompactHeight);
+            key = (primary, split);
+            Place(LeadingHost, split ? primary.Bubble : primary.Leading);
+            Place(TrailingHost, split ? null : primary.Trailing);
         }
         else
         {
@@ -345,11 +343,12 @@ public partial class IslandWindow : Window
             key = Mode.Idle;
         }
 
-        // Bubble only next to the compact pill.
+        // Bubble only next to the compact pill. While it shrinks back in, it keeps what it showed.
         var showBubble = mode == Mode.Compact && _secondary is not null;
-        if (showBubble && !ReferenceEquals(BubbleHost.Content, _secondary!.Bubble))
+        if (showBubble)
         {
-            BubbleHost.Content = _secondary.Bubble;
+            Place(BubbleHost, _secondary!.Bubble);
+            Bubble.Width = _secondary.MinimalWidth;
         }
         _bubble.Target = showBubble ? 1 : 0;
         Bubble.IsHitTestVisible = showBubble;
@@ -374,6 +373,19 @@ public partial class IslandWindow : Window
         _driver.Kick();
         UpdateHoverTarget();
         UpdateAccessibleName();
+    }
+
+    /// <summary>Puts a view in one of the compact hosts, first taking it out of the others (a WPF element has one
+    /// parent, and an activity's minimal view moves between the attached and detached spots when they swap).</summary>
+    private void Place(ContentControl host, FrameworkElement? view)
+    {
+        if (ReferenceEquals(host.Content, view)) return;
+        foreach (var other in new[] { LeadingHost, TrailingHost, BubbleHost })
+        {
+            if (other != host && view is not null && ReferenceEquals(other.Content, view)) other.Content = null;
+        }
+        host.Content = null;
+        host.Content = view;
     }
 
     private Activity? _hoverTarget;
@@ -475,9 +487,10 @@ public partial class IslandWindow : Window
         var left = (CanvasWidth - w) / 2;
         var top = _settings.TopOffset + (_height.Value - h) / 2;
 
-        // When the bubble is visible, shift the pill left so pill + bubble stay centered as a group.
-        var bubbleShift = Math.Max(0, _bubble.Value) * (BubbleSize + BubbleGap) / 2;
-        left -= bubbleShift;
+        // When the bubble is out, shift the pill left so pill + bubble stay centered as a group.
+        var split = Math.Max(0, _bubble.Value);
+        var bubbleWidth = Bubble.Width;
+        left -= Math.Min(split, 1) * (bubbleWidth + BubbleGap) / 2;
 
         var outline = IslandShape.Rounded(w, h, r);
         Pill.Width = w;
@@ -490,16 +503,54 @@ public partial class IslandWindow : Window
             Canvas.SetTop(e, top);
         }
 
-        Canvas.SetLeft(Bubble, left + w + BubbleGap);
+        // The bubble buds off the island's trailing end like a drop: it starts inside the pill, small, and moves out
+        // to its place while growing; until it lets go, a narrowing neck of black joins the two (Apple's "goo").
+        var pillRight = left + w;
+        var bubbleLeft = pillRight + BubbleGap * split - (1 - Math.Min(split, 1)) * bubbleWidth * 0.8;
+        var scale = 0.45 + 0.55 * split;
+        Canvas.SetLeft(Bubble, bubbleLeft);
         Canvas.SetTop(Bubble, top + (h - BubbleSize) / 2);
-        var bs = Math.Max(0, _bubble.Value);
-        BubbleScale.ScaleX = BubbleScale.ScaleY = bs;
-        Bubble.Opacity = Math.Clamp(bs * 1.4, 0, 1);
+        BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, scale);
+        Bubble.Opacity = split > 0.01 ? 1 : 0;
+        DrawNeck(pillRight, bubbleLeft + bubbleWidth * (1 - scale) / 2, top + h / 2, Math.Min(h, BubbleSize * scale) / 2);
 
         // Privacy dots sit after the pill (and the bubble while it's out), level with the compact row.
-        Canvas.SetLeft(Indicators, left + w + BubbleGap + bs * (BubbleSize + BubbleGap));
+        Canvas.SetLeft(Indicators, pillRight + BubbleGap + Math.Min(split, 1) * (bubbleWidth + BubbleGap));
         Canvas.SetTop(Indicators, top + (CompactHeight - Indicators.ActualHeight) / 2);
     }
+
+    /// <summary>The black bridge between the island and the bubble while they're close: full height when they touch,
+    /// pinching to nothing at <see cref="NeckReach"/> apart.</summary>
+    private void DrawNeck(double pillRight, double bubbleLeft, double centerY, double halfHeight)
+    {
+        var gap = bubbleLeft - pillRight;
+        var t = Math.Clamp(1 - gap / NeckReach, 0, 1);
+        if (t <= 0 || halfHeight < 1)
+        {
+            Neck.Visibility = Visibility.Collapsed;
+            Bubble.BorderThickness = new Thickness(1);
+            return;
+        }
+        var x0 = pillRight - 8;
+        var x1 = bubbleLeft + 8;
+        var mid = (x0 + x1) / 2;
+        var end = halfHeight * 0.8;
+        var pinch = end * t * t; // the waist thins faster than the ends as they part
+        var g = new StreamGeometry();
+        using (var c = g.Open())
+        {
+            c.BeginFigure(new Point(x0, centerY - end), true, true);
+            c.QuadraticBezierTo(new Point(mid, centerY - pinch), new Point(x1, centerY - end), true, true);
+            c.LineTo(new Point(x1, centerY + end), true, true);
+            c.QuadraticBezierTo(new Point(mid, centerY + pinch), new Point(x0, centerY + end), true, true);
+        }
+        g.Freeze();
+        Neck.Data = g;
+        Neck.Visibility = Visibility.Visible;
+        Bubble.BorderThickness = new Thickness(0); // the key line would draw a seam across the neck
+    }
+
+    private const double NeckReach = BubbleGap - 2; // gone before the bubble settles at its gap
 
     // ───────────────────────────── key line and press ─────────────────────────────
 
