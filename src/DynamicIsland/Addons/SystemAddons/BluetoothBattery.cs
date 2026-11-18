@@ -7,7 +7,7 @@ namespace DynamicIsland.Addons.SystemAddons;
 
 /// <summary>
 /// The battery level of a Bluetooth device, when it shares one: headsets publish it as a device property,
-/// Bluetooth LE devices (and an iPhone linked with Phone Link) through the GATT battery service.
+/// Bluetooth LE devices through the GATT battery service.
 /// </summary>
 public static class BluetoothBattery
 {
