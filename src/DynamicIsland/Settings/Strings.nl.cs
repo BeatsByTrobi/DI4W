@@ -60,6 +60,7 @@ public static partial class L
         // ───────────── island: add-ons ─────────────
         ["Couldn't start: {0}"] = "Kon niet starten: {0}",
         ["Do Not Disturb is on"] = "Niet storen staat aan",
+        ["Do Not Disturb is off"] = "Niet storen staat uit",
         ["Later"] = "Later",
         ["Restart"] = "Opnieuw opstarten",
         ["Updates are ready"] = "Updates staan klaar",
@@ -106,8 +107,6 @@ public static partial class L
         ["Show in folder"] = "In map tonen",
         ["This PC has no battery."] = "Deze pc heeft geen batterij.",
         ["Charging"] = "Opladen",
-        [" · {0} h {1} min left"] = " · nog {0} u {1} min",
-        [" · {0} min left"] = " · nog {0} min",
         ["On battery"] = "Op batterij",
         ["Battery very low"] = "Batterij bijna leeg",
         ["{0}% left. Plug in your charger."] = "Nog {0}%. Sluit je oplader aan.",

@@ -193,6 +193,23 @@ public static class Ui
         return grid;
     }
 
+    // System indicators (Silent mode, Focus, charging on the iPhone) keep the island one line tall and just widen it.
+    public const double IndicatorWidth = 290;
+    public const double IndicatorHeight = 37;
+
+    /// <summary>A one-line indicator: something on the leading side, something on the trailing side, snug against the
+    /// rounded ends like a compact activity.</summary>
+    public static FrameworkElement Indicator(FrameworkElement leading, FrameworkElement trailing)
+    {
+        leading.HorizontalAlignment = HorizontalAlignment.Left;
+        leading.VerticalAlignment = VerticalAlignment.Center;
+        leading.Margin = new Thickness(13, 0, 0, 0);
+        trailing.HorizontalAlignment = HorizontalAlignment.Right;
+        trailing.VerticalAlignment = VerticalAlignment.Center;
+        trailing.Margin = new Thickness(0, 0, 15, 0);
+        return new Grid { Height = IndicatorHeight, Children = { leading, trailing } };
+    }
+
     /// <summary>An alert with a row of wide capsule buttons under it, like the iPhone's expanded prompts.
     /// Use with <see cref="ActionAlertHeight"/>.</summary>
     public static FrameworkElement ActionAlertView(UIElement icon, string title, string subtitle, params Button[] actions)

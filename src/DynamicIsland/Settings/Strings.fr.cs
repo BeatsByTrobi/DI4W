@@ -60,6 +60,7 @@ public static partial class L
         // ───────────── island: add-ons ─────────────
         ["Couldn't start: {0}"] = "Démarrage impossible : {0}",
         ["Do Not Disturb is on"] = "Ne pas déranger est activé",
+        ["Do Not Disturb is off"] = "Ne pas déranger est désactivé",
         ["Later"] = "Plus tard",
         ["Restart"] = "Redémarrer",
         ["Updates are ready"] = "Les mises à jour sont prêtes",
@@ -106,8 +107,6 @@ public static partial class L
         ["Show in folder"] = "Afficher dans le dossier",
         ["This PC has no battery."] = "Ce PC n'a pas de batterie.",
         ["Charging"] = "En charge",
-        [" · {0} h {1} min left"] = " · encore {0} h {1} min",
-        [" · {0} min left"] = " · encore {0} min",
         ["On battery"] = "Sur batterie",
         ["Battery very low"] = "Batterie très faible",
         ["{0}% left. Plug in your charger."] = "Encore {0} %. Branchez votre chargeur.",

@@ -17,10 +17,11 @@ public sealed class DoNotDisturbAddon : Addon
     private const ulong WNF_SHEL_QUIETHOURS_ACTIVE_PROFILE_CHANGED = 0x0D83063EA3BF1C75;
 
     private readonly System.Windows.Controls.TextBlock _moon = Ui.Glyph("", 14, Ui.Indigo);
+    private readonly HudView _hud;
     private DispatcherTimer? _poll;
     private bool _quiet;
 
-    public DoNotDisturbAddon(AddonContext context) : base(context) { }
+    public DoNotDisturbAddon(AddonContext context) : base(context) => _hud = new HudView(_moon.Text, Ui.Indigo);
 
     public override string Key => nameof(AddonSettings.DoNotDisturb);
     public override string Name => "Do Not Disturb";
@@ -29,31 +30,37 @@ public sealed class DoNotDisturbAddon : Addon
     /// <summary>The real thing is just the moon in the empty island; the sample says what it means.</summary>
     public override void Preview()
     {
-        var hud = new HudView(_moon.Text, Ui.Indigo);
-        hud.Set(null, L.T("Do Not Disturb is on"));
-        Show(hud.Alert);
+        _hud.Set(null, L.T("Do Not Disturb is on"));
+        Show(_hud.Alert);
     }
 
     protected override void Start()
     {
         _moon.ToolTip = L.T("Do Not Disturb is on");
         _poll = new DispatcherTimer { Interval = Power.Interval(TimeSpan.FromSeconds(3)) };
-        _poll.Tick += (_, _) => Apply(IsQuiet());
+        _poll.Tick += (_, _) => Apply(IsQuiet(), announce: true);
         _poll.Start();
-        Apply(IsQuiet());
+        Apply(IsQuiet(), announce: false);
     }
 
     protected override void Stop()
     {
         _poll?.Stop();
         _poll = null;
-        Apply(false);
+        Apply(false, announce: false);
     }
 
-    private void Apply(bool quiet)
+    /// <param name="announce">Show the change in the island, as the iPhone does when a Focus turns on or off.</param>
+    private void Apply(bool quiet, bool announce)
     {
         if (quiet == _quiet) return;
         _quiet = quiet;
+        if (announce)
+        {
+            // Before going quiet, or it would be held back itself.
+            _hud.Set(null, quiet ? L.T("Do Not Disturb is on") : L.T("Do Not Disturb is off"));
+            Show(_hud.Alert);
+        }
         Context.Manager.Quiet = quiet;
         Context.SetIdleLeading(quiet ? _moon : null);
     }

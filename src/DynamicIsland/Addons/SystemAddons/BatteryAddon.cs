@@ -18,7 +18,7 @@ public sealed class BatteryAddon : Addon
     public override string Name => "Battery";
     protected override bool IsEnabled(AddonSettings o) => o.Battery;
 
-    public override void Preview() => Announce(L.T("Charging"), "82%", 82, Ui.Green, charging: true);
+    public override void Preview() => Indicate(82, charging: true);
 
     protected override void Start()
     {
@@ -50,15 +50,11 @@ public sealed class BatteryAddon : Addon
 
         if (plugged)
         {
-            Announce(L.T("Charging"), $"{percent}%", percent, Ui.Green, charging: true);
+            Indicate(percent, charging: true);
         }
         else
         {
-            var left = PowerManager.RemainingDischargeTime;
-            var estimate = left > TimeSpan.FromMinutes(1) && left < TimeSpan.FromDays(1)
-                ? left.TotalHours >= 1 ? L.F(" · {0} h {1} min left", (int)left.TotalHours, left.Minutes) : L.F(" · {0} min left", left.Minutes)
-                : "";
-            Announce(L.T("On battery"), $"{percent}%{estimate}", percent, percent <= Options.BatteryLowPercent ? Ui.Red : Ui.Primary, charging: false);
+            Indicate(percent, charging: false);
         }
     });
 
@@ -80,6 +76,30 @@ public sealed class BatteryAddon : Addon
         }
     });
 
+    /// <summary>
+    /// The iPhone's charging indicator: the island widens with "Charging" on the leading side and the percentage with a
+    /// battery on the trailing side, green while charging (red when low).
+    /// </summary>
+    private void Indicate(int percent, bool charging)
+    {
+        var color = percent <= Options.BatteryLowPercent ? Ui.Red : charging ? Ui.Green : Ui.Primary;
+        var label = Ui.Text(charging ? L.T("Charging") : L.T("On battery"), 15, FontWeights.SemiBold, Ui.Primary);
+        var level = Ui.Text($"{percent}%", 15, FontWeights.SemiBold, color == Ui.Primary ? Ui.Primary : color, tabular: true);
+        level.Margin = new Thickness(0, 0, 7, 0);
+        var battery = new System.Windows.Controls.StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            Children = { level, Icons.Battery(percent / 100.0, charging, color, 27) },
+        };
+        Show(new IslandAlert
+        {
+            Content = Ui.Indicator(label, battery),
+            Size = new Size(Ui.IndicatorWidth, Ui.IndicatorHeight),
+            Duration = TimeSpan.FromSeconds(2.5),
+            Keyline = color == Ui.Primary ? null : color.Color,
+        });
+    }
+
     private void Announce(string title, string subtitle, int percent, System.Windows.Media.Brush color, bool charging, bool urgent = false)
     {
         var icon = new System.Windows.Controls.Border
@@ -93,6 +113,7 @@ public sealed class BatteryAddon : Addon
             Duration = TimeSpan.FromSeconds(urgent ? 8 : 3.5),
             StickyUntilHover = urgent,
             BreaksThroughQuiet = urgent,
+            Keyline = (color as System.Windows.Media.SolidColorBrush)?.Color,
         });
     }
 }

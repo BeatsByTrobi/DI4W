@@ -60,6 +60,7 @@ public static partial class L
         // ───────────── island: add-ons ─────────────
         ["Couldn't start: {0}"] = "Konnte nicht starten: {0}",
         ["Do Not Disturb is on"] = "Nicht stören ist an",
+        ["Do Not Disturb is off"] = "Nicht stören ist aus",
         ["Later"] = "Später",
         ["Restart"] = "Neu starten",
         ["Updates are ready"] = "Updates sind bereit",
@@ -106,8 +107,6 @@ public static partial class L
         ["Show in folder"] = "Im Ordner anzeigen",
         ["This PC has no battery."] = "Dieser PC hat keinen Akku.",
         ["Charging"] = "Wird geladen",
-        [" · {0} h {1} min left"] = " · noch {0} Std. {1} Min.",
-        [" · {0} min left"] = " · noch {0} Min.",
         ["On battery"] = "Akkubetrieb",
         ["Battery very low"] = "Akku fast leer",
         ["{0}% left. Plug in your charger."] = "Noch {0} %. Schließe das Ladegerät an.",

@@ -17,7 +17,9 @@ public sealed class LockKeysAddon : Addon
     private const uint RIDEV_INPUTSINK = 0x00000100, RIDEV_REMOVE = 0x00000001, RID_INPUT = 0x10000003;
     private const ushort RI_KEY_BREAK = 1;
 
-    private readonly HudView _hud = new("", Ui.Primary);
+    // Like the iPhone's Silent mode indicator: tinted while the lock is on, plain when it's off.
+    private readonly HudView _on = new("", Ui.Amber);
+    private readonly HudView _off = new("", Ui.Primary);
     private bool _caps, _num;
 
     public LockKeysAddon(AddonContext context) : base(context) { }
@@ -69,8 +71,9 @@ public sealed class LockKeysAddon : Addon
 
     private void Announce(string key, bool on)
     {
-        _hud.Set(null, on ? L.F("{0} on", key) : L.F("{0} off", key));
-        Show(_hud.Alert);
+        var hud = on ? _on : _off;
+        hud.Set(null, on ? L.F("{0} on", key) : L.F("{0} off", key));
+        Show(hud.Alert);
     }
 
     private static bool IsOn(int vk) => (Interop.Win32.GetKeyState(vk) & 1) != 0;

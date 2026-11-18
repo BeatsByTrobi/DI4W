@@ -75,7 +75,7 @@ public sealed class VolumeAddon : Addon, IMMNotificationClient
         var muted = data.Muted || level <= 0.001f;
         Context.Ui(() =>
         {
-            _hud.Set(muted ? 0 : level, muted ? L.T("Muted") : $"{Math.Round(level * 100)}", muted ? Muted : Speaker);
+            _hud.Set(muted ? null : level, muted ? L.T("Muted") : $"{Math.Round(level * 100)}%", muted ? Muted : Speaker);
             Show(_hud.Alert);
         });
     }
