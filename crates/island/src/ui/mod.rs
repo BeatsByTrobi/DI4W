@@ -7,11 +7,11 @@ pub mod el;
 pub mod geom;
 pub mod icons;
 pub mod image;
-
+pub mod menu;
 pub mod render;
 pub mod shape;
 pub mod text;
-
+pub mod tray_icons;
 
 use colors::Color;
 use el::{Action, Align, ButtonSpec, Cursor, El, Font, Kind, Len, Run, Text, TextAlign};

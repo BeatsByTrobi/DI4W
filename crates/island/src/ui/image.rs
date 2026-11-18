@@ -28,17 +28,14 @@ thread_local! {
 #[derive(Debug)]
 pub struct Image {
     pub id: u64,
-    pub w: u32,
-    pub h: u32,
 }
 
 impl Image {
     /// Registers the pixels (UI thread).
     pub fn new(bitmap: Bitmap) -> Rc<Image> {
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-        let (w, h) = (bitmap.w, bitmap.h);
         IMAGES.with(|m| m.borrow_mut().insert(id, Rc::new(bitmap)));
-        Rc::new(Image { id, w, h })
+        Rc::new(Image { id })
     }
 }
 

@@ -103,10 +103,6 @@ impl Alert {
         self
     }
 
-    pub fn height(mut self, h: f64) -> Alert {
-        self.size.h = h;
-        self
-    }
 
     pub fn keyline(mut self, color: Option<Color>) -> Alert {
         self.keyline = color;

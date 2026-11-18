@@ -58,9 +58,6 @@ impl Rect {
         Point::new(self.x + self.w / 2.0, self.y + self.h / 2.0)
     }
 
-    pub fn offset(&self, dx: f64, dy: f64) -> Rect {
-        Rect::new(self.x + dx, self.y + dy, self.w, self.h)
-    }
 }
 
 /// WPF's `Thickness`: margins and paddings.

@@ -77,7 +77,6 @@ pub enum Font {
 pub enum TextAlign {
     #[default]
     Left,
-    Center,
     Right,
 }
 
@@ -145,8 +144,6 @@ pub enum Kind {
 /// The drawing operations custom elements use (implemented by the Direct2D renderer).
 pub trait Paint {
     fn fill_rounded(&mut self, rect: Rect, radius: f64, brush: Brush);
-    fn fill_path(&mut self, path: &Path, color: Color);
-    fn stroke_path(&mut self, path: &Path, color: Color, thickness: f64, round_caps: bool);
 }
 
 /// A clickable element: WPF's `Button` with the island's style (dims to 0.8 on hover, shrinks to 0.88 while
@@ -328,20 +325,12 @@ impl El {
         self
     }
 
-    pub fn collapsed(mut self, collapsed: bool) -> El {
-        self.collapsed = collapsed;
-        self
-    }
 
     pub fn tooltip(mut self, tip: impl Into<String>) -> El {
         self.tooltip = Some(tip.into());
         self
     }
 
-    pub fn tooltip_opt(mut self, tip: Option<String>) -> El {
-        self.tooltip = tip;
-        self
-    }
 
     pub fn named(mut self, name: impl Into<String>) -> El {
         self.name = Some(name.into());
@@ -378,14 +367,6 @@ impl El {
         }
     }
 
-    fn children_mut(&mut self) -> Vec<&mut El> {
-        match &mut self.kind {
-            Kind::Boxed(c) | Kind::Stack { children: c, .. } | Kind::Uniform { children: c } => c.iter_mut().collect(),
-            Kind::Grid { cells, .. } => cells.iter_mut().map(|(_, _, e)| e).collect(),
-            Kind::Scroll { child, .. } => vec![child.as_mut()],
-            _ => Vec::new(),
-        }
-    }
 
     // ───────────────────────────── layout ─────────────────────────────
 
@@ -620,13 +601,6 @@ impl El {
         }
     }
 
-    /// Moves every element by (dx, dy) (to place a laid-out tree somewhere else).
-    pub fn translate(&mut self, dx: f64, dy: f64) {
-        self.rect = self.rect.offset(dx, dy);
-        for c in self.children_mut() {
-            c.translate(dx, dy);
-        }
-    }
 }
 
 /// Column widths and row heights for a grid in the given room. `measuring`: children are measured too.

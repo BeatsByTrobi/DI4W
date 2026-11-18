@@ -10,7 +10,6 @@ use std::sync::OnceLock;
 pub const TIMER: &str = "\u{E916}"; // Stopwatch
 pub const CHAT: &str = "\u{E8BD}"; // Message
 pub const UPDATE: &str = "\u{E896}"; // Download
-pub const BELL: &str = "\u{EA8F}"; // Ringer
 pub const MOON: &str = "\u{E708}"; // Quiet hours
 pub const RECENT: &str = "\u{E81C}"; // History
 pub const FOCUS: &str = "\u{E7C1}"; // Flag
@@ -39,7 +38,6 @@ icon!(pause, "M 0,0 H 4.5 V 15 H 0 Z M 8.5,0 H 13 V 15 H 8.5 Z");
 icon!(next, "M 0,0 L 9,6.5 L 0,13 Z M 9,0 L 18,6.5 L 9,13 Z");
 icon!(previous, "M 18,0 L 9,6.5 L 18,13 Z M 9,0 L 0,6.5 L 9,13 Z");
 icon!(close, "M 0,0 L 12,12 M 12,0 L 0,12");
-icon!(check, "M 0,7 L 5,12 L 14,1");
 icon!(bolt, "M 6,0 L 0,8 H 4 L 2,14 L 9,5 H 5 Z");
 
 /// A filled icon (C#'s `Ui.Shape`): fill and a 1.6 outline with round joins, stretched uniformly into a square.

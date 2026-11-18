@@ -643,14 +643,6 @@ impl Paint for Painter<'_> {
     fn fill_rounded(&mut self, rect: Rect, radius: f64, brush: Brush) {
         self.fill_rect(rect, [radius; 4], brush);
     }
-
-    fn fill_path(&mut self, path: &Path, color: Color) {
-        self.fill(path, Brush::Solid(color));
-    }
-
-    fn stroke_path(&mut self, path: &Path, color: Color, thickness: f64, round_caps: bool) {
-        self.stroke(path, color, thickness, round_caps);
-    }
 }
 
 /// The C#'s `Icons.Ring`: an arc from 12 o'clock, clockwise, for `progress` (0..1) of the circle.

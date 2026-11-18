@@ -34,7 +34,6 @@ thread_local! {
     static NEXT_TIMER: Cell<u64> = const { Cell::new(1) };
     static WAITING: RefCell<HashMap<u64, Box<dyn FnOnce(Box<dyn Any + Send>)>>> = RefCell::new(HashMap::new());
     static NEXT_WAIT: Cell<u64> = const { Cell::new(1) };
-    static UI_THREAD: Cell<bool> = const { Cell::new(false) };
 }
 
 struct TimerEntry {
@@ -55,13 +54,8 @@ pub fn init() {
             .unwrap_or_default();
         WINDOW.store(hwnd.0 as isize, Ordering::SeqCst);
     }
-    UI_THREAD.with(|u| u.set(true));
 }
 
-/// True on the UI thread.
-pub fn is_ui_thread() -> bool {
-    UI_THREAD.with(|u| u.get())
-}
 
 fn window() -> HWND {
     HWND(WINDOW.load(Ordering::SeqCst) as *mut _)
@@ -162,6 +156,59 @@ fn run_queued() {
     }
 }
 
+/// A UI-thread callback that other threads can send values to, as often as they like (a WinRT event, a watcher).
+pub struct Handle<T> {
+    id: u64,
+    _t: std::marker::PhantomData<fn(T)>,
+}
+
+impl<T> Clone for Handle<T> {
+    fn clone(&self) -> Self {
+        Handle { id: self.id, _t: std::marker::PhantomData }
+    }
+}
+
+thread_local! {
+    static HANDLES: RefCell<HashMap<u64, Rc<dyn Fn(Box<dyn Any>)>>> = RefCell::new(HashMap::new());
+}
+
+impl<T: Send + 'static> Handle<T> {
+    /// Call on the UI thread; `f` runs there with each value sent.
+    pub fn new(f: impl Fn(T) + 'static) -> Handle<T> {
+        let id = NEXT_WAIT.with(|n| {
+            let id = n.get();
+            n.set(id + 1);
+            id
+        });
+        HANDLES.with(|h| {
+            h.borrow_mut().insert(
+                id,
+                Rc::new(move |any: Box<dyn Any>| {
+                    if let Ok(v) = any.downcast::<T>() {
+                        f(*v);
+                    }
+                }),
+            )
+        });
+        Handle { id, _t: std::marker::PhantomData }
+    }
+
+    /// From any thread.
+    pub fn send(&self, value: T) {
+        let id = self.id;
+        post(move || {
+            if let Some(f) = HANDLES.with(|h| h.borrow().get(&id).cloned()) {
+                f(Box::new(value));
+            }
+        });
+    }
+
+    /// Forgets the callback (UI thread).
+    pub fn close(&self) {
+        HANDLES.with(|h| h.borrow_mut().remove(&self.id));
+    }
+}
+
 // ───────────────────────────── timers ─────────────────────────────
 
 /// A timer on the UI thread; stops when dropped (unless [`Timer::forget`] is called).
@@ -196,15 +243,6 @@ impl Timer {
         arm();
     }
 
-    /// Restarts the countdown (DispatcherTimer Stop + Start).
-    pub fn restart(&self) {
-        TIMERS.with(|t| {
-            if let Some(e) = t.borrow_mut().get_mut(&self.0) {
-                e.due = Instant::now() + e.interval.unwrap_or_default();
-            }
-        });
-        arm();
-    }
 
     /// Keeps the timer running after the handle is dropped (a one-shot that must still fire).
     pub fn forget(self) {

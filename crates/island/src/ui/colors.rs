@@ -57,9 +57,6 @@ impl Color {
         Color::hex(text).unwrap_or_else(|| panic!("bad color {text}"))
     }
 
-    pub fn with_alpha(self, a: u8) -> Color {
-        Color { a, ..self }
-    }
 
     /// The same color with its alpha multiplied by `opacity` (0..1).
     pub fn faded(self, opacity: f64) -> Color {

@@ -33,11 +33,6 @@ impl Spring {
         (self.value - self.target).abs() < 0.02 && self.velocity.abs() < 0.02
     }
 
-    pub fn snap(&mut self, value: f64) {
-        self.value = value;
-        self.target = value;
-        self.velocity = 0.0;
-    }
 
     /// Advances the spring by `dt` seconds in 1/480 s steps; once close enough it snaps to the target.
     pub fn step(&mut self, mut dt: f64) {
@@ -70,11 +65,6 @@ pub fn back_out(t: f64, amplitude: f64) -> f64 {
     1.0 - ease_in(1.0 - t)
 }
 
-/// WPF's `SineEase` with `EasingMode.EaseIn` (the default mode for a plain `SineEase`).
-pub fn sine_in(t: f64) -> f64 {
-    let t = t.clamp(0.0, 1.0);
-    1.0 - ((1.0 - t) * PI / 2.0).sin()
-}
 
 /// A value going from `from` to `to` over `duration` seconds after `delay`, shaped by an easing curve.
 #[derive(Clone, Copy, Debug)]
@@ -160,7 +150,7 @@ mod tests {
 
     #[test]
     fn eases_start_and_end_where_they_should() {
-        for f in [cubic_out, sine_in] {
+        for f in [cubic_out] {
             assert!(f(0.0).abs() < 1e-9);
             assert!((f(1.0) - 1.0).abs() < 1e-9);
         }

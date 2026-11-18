@@ -64,8 +64,6 @@ pub struct TextLayout {
     pub max_height: f64,
     pub width: f64,
     pub height: f64,
-    /// Where the first line's text starts horizontally (non-zero for centered/right-aligned text).
-    pub left: f64,
 }
 
 impl TextLayout {
@@ -78,7 +76,7 @@ const BIG: f32 = 100_000.0;
 
 /// Lays out the text in a box of at most `max_width` × `max_height` (either may be infinite).
 pub fn layout(text: &Text, max_width: f64, max_height: f64) -> TextLayout {
-    let empty = TextLayout { layout: None, max_width, max_height, width: 0.0, height: 0.0, left: 0.0 };
+    let empty = TextLayout { layout: None, max_width, max_height, width: 0.0, height: 0.0 };
     let Some(factory) = factory() else { return empty };
     let Some(first) = text.runs.first() else { return empty };
     let content: Vec<u16> = text.content().encode_utf16().collect();
@@ -99,7 +97,6 @@ pub fn layout(text: &Text, max_width: f64, max_height: f64) -> TextLayout {
         let _ = format.SetWordWrapping(if text.wrap { DWRITE_WORD_WRAPPING_WRAP } else { DWRITE_WORD_WRAPPING_NO_WRAP });
         let _ = format.SetTextAlignment(match text.align {
             TextAlign::Left => DWRITE_TEXT_ALIGNMENT_LEADING,
-            TextAlign::Center => DWRITE_TEXT_ALIGNMENT_CENTER,
             TextAlign::Right => DWRITE_TEXT_ALIGNMENT_TRAILING,
         });
         if text.trim {
@@ -129,7 +126,7 @@ pub fn layout(text: &Text, max_width: f64, max_height: f64) -> TextLayout {
         let _ = layout.GetMetrics(&mut metrics);
         let height = if max_height.is_finite() { (metrics.height as f64).min(max_height.max(0.0)) } else { metrics.height as f64 };
         let width = (metrics.width as f64).min(fw as f64);
-        TextLayout { layout: Some(layout), max_width, max_height, width, height, left: metrics.left as f64 }
+        TextLayout { layout: Some(layout), max_width, max_height, width, height }
     }
 }
 
