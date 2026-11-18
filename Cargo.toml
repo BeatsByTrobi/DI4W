@@ -1,0 +1,27 @@
+# Dynamic Island for Windows, in Rust.
+#   crates/core      shared by both apps: settings.json, translations, updates, displays, messages to the island
+#   crates/island    the island itself (DynamicIsland.exe)
+#   crates/settings  the settings app (DynamicIsland.Settings.exe)
+[workspace]
+resolver = "3"
+members = ["crates/core", "crates/island", "crates/settings"]
+
+[workspace.package]
+version = "1.5.2"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/aangeraakt/DI4W"
+
+[workspace.dependencies]
+di4w-core = { path = "crates/core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+ureq = "3"
+windows = "0.62"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "unwind" # the island writes crash.txt from its panic hook

@@ -17,3 +17,6 @@ artifacts/
 # OS
 Thumbs.db
 desktop.ini
+
+# Rust build output
+/target/

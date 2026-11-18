@@ -1,0 +1,13 @@
+[package]
+name = "di4w-settings"
+description = "The settings app: DynamicIsland.Settings.exe"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "DynamicIsland-Settings"
+path = "src/main.rs"
+
+[dependencies]
+di4w-core.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "di4w-island"
+description = "The island: DynamicIsland.exe"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "DynamicIsland"
+path = "src/main.rs"
+
+[dependencies]
+di4w-core.workspace = true
