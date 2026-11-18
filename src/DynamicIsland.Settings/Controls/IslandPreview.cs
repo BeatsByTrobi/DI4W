@@ -12,7 +12,7 @@ namespace DynamicIsland.SettingsApp.Controls;
 /// </summary>
 public sealed class IslandPreview : UserControl
 {
-    private const double PillWidth = 250, PillHeight = 34, ScreenHeight = 132;
+    private const double PillWidth = 230, PillHeight = 37, ScreenHeight = 132; // Apple's compact island
 
     private readonly Border _pill;
     private readonly Border _art;
@@ -56,12 +56,13 @@ public sealed class IslandPreview : UserControl
         _pill.CornerRadius = new CornerRadius(h / 2);
         _pill.Margin = new Thickness(0, topOffset * scale, 0, 0);
         _pill.Background = new SolidColorBrush(light ? Color.FromArgb(255, 0xF5, 0xF5, 0xF7) : Colors.Black);
-        _pill.BorderBrush = new SolidColorBrush(Color.FromArgb(light ? (byte)0x22 : (byte)0, 0, 0, 0));
-        _pill.BorderThickness = new Thickness(light ? 1 : 0);
+        // The hairline key line, as on the island: grey on the light one, faint white on the black one.
+        _pill.BorderBrush = new SolidColorBrush(light ? Color.FromArgb(0x22, 0, 0, 0) : Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF));
+        _pill.BorderThickness = new Thickness(1);
 
-        // Same 16 px insets as the real island's compact view.
-        _content.Margin = new Thickness(16 * scale, 0, 16 * scale, 0);
-        _art.Width = _art.Height = 22 * scale;
+        // Same insets as the real island's compact view.
+        _content.Margin = new Thickness(10 * scale, 0, 12 * scale, 0);
+        _art.Width = _art.Height = 24 * scale;
 
         _bars.Children.Clear();
         _bars.Spacing = 2.5 * scale;
