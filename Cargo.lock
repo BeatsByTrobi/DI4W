@@ -130,6 +130,7 @@ dependencies = [
  "serde_json",
  "ureq",
  "windows",
+ "windows-collections",
  "windows-core",
  "windows-numerics",
 ]
