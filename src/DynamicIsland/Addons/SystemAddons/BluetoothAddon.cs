@@ -36,11 +36,7 @@ public sealed class BluetoothAddon : Addon
     public override void Preview()
     {
         var sample = new Device(L.T("Headphones"), true, true, new[] { "Audio" }, null, false);
-        Show(new IslandAlert
-        {
-            Content = Ui.AlertView(Ui.GlyphCircle(GlyphFor(sample), Ui.Blue, Ui.IconSize, 22), sample.Name, L.F("Connected · {0}% battery", 80)),
-            Duration = TimeSpan.FromSeconds(3),
-        });
+        ShowConnection(sample, connected: true, battery: 80);
     }
 
     protected override void Start()
@@ -93,13 +89,41 @@ public sealed class BluetoothAddon : Addon
     private async Task Announce(string id, Device device, bool connected)
     {
         int? battery = connected ? await BluetoothBattery.ReadAsync(id, device.Container, device.LowEnergy, device.Name) : null;
-        var subtitle = connected ? battery is { } b ? L.F("Connected · {0}% battery", b) : L.T("Connected") : L.T("Disconnected");
+        ShowConnection(device, connected, battery);
+    }
+
+    /// <summary>Like AirPods connecting to an iPhone: the device, "Connected", and its charge as a ring on the trailing
+    /// side (green, or red when low).</summary>
+    private void ShowConnection(Device device, bool connected, int? battery)
+    {
         var icon = Ui.GlyphCircle(GlyphFor(device), connected ? Ui.Blue : Ui.ButtonBg, Ui.IconSize, 22);
+        var subtitle = connected ? L.T("Connected") : L.T("Disconnected");
         Show(new IslandAlert
         {
-            Content = Ui.AlertView(icon, device.Name, subtitle),
+            Content = Ui.AlertView(icon, device.Name, subtitle, accessory: battery is { } b ? BatteryRing(b) : null),
             Duration = TimeSpan.FromSeconds(3),
+            Keyline = connected ? Ui.Blue.Color : null,
         });
+    }
+
+    private static FrameworkElement BatteryRing(int percent)
+    {
+        const double size = 44, stroke = 4;
+        var color = percent <= 20 ? Ui.Red : Ui.Green;
+        var label = Ui.Text($"{percent}", 14, FontWeights.SemiBold, Ui.Primary, tabular: true);
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.ToolTip = L.F("{0}% battery", percent);
+        return new System.Windows.Controls.Grid
+        {
+            Width = size,
+            Height = size,
+            Children =
+            {
+                new System.Windows.Shapes.Ellipse { Width = size, Height = size, Stroke = Ui.Track, StrokeThickness = stroke },
+                Icons.Ring(percent / 100.0, size, stroke, color),
+                label,
+            },
+        };
     }
 
     private static string GlyphFor(Device d)
