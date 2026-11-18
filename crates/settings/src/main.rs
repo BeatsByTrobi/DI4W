@@ -69,7 +69,7 @@ fn run(page: i32, welcome: bool, crash: Option<String>) -> Result<(), slint::Pla
         l::f(&english, &refs).into()
     });
 
-    let dark = !theme::apps_use_light_theme();
+    let dark = apps_dark();
     let mica = window::supports_mica();
     let t = app.global::<Theme>();
     t.set_dark(dark);
@@ -122,7 +122,7 @@ fn customize_window(weak: slint::Weak<MainWindow>, dark: bool, mica: bool, attem
         },
         move || {
             if let Some(app) = weak.upgrade() {
-                let dark = !theme::apps_use_light_theme();
+                let dark = apps_dark();
                 app.global::<Theme>().set_dark(dark);
                 app.invoke_apply_theme();
                 if let Some(hwnd) = window::hwnd(app.window()) {
@@ -131,6 +131,16 @@ fn customize_window(weak: slint::Weak<MainWindow>, dark: bool, mica: bool, attem
             }
         },
     );
+}
+
+/// Windows' app mode ("Choose your default app mode"). A debug build can be told otherwise with
+/// DI4W_THEME=light|dark, to check both looks.
+fn apps_dark() -> bool {
+    match std::env::var("DI4W_THEME").ok().filter(|_| cfg!(debug_assertions)).as_deref() {
+        Some("light") => false,
+        Some("dark") => true,
+        _ => !theme::apps_use_light_theme(),
+    }
 }
 
 /// "Segoe Fluent Icons" on Windows 11, "Segoe MDL2 Assets" on Windows 10.

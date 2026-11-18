@@ -858,18 +858,22 @@ export component ContentDialog inherits Rectangle {
                 HorizontalLayout {
                     padding: 24px;
                     spacing: 8px;
+                    // Equal widths, as ContentDialog's buttons.
                     if root.primary != "": Button {
+                        preferred-width: 1px;
                         horizontal-stretch: 1;
                         primary: true;
                         text: root.primary;
                         clicked => { root.primary-clicked(); }
                     }
                     if root.secondary != "": Button {
+                        preferred-width: 1px;
                         horizontal-stretch: 1;
                         text: root.secondary;
                         clicked => { root.secondary-clicked(); }
                     }
                     if root.close != "": Button {
+                        preferred-width: 1px;
                         horizontal-stretch: 1;
                         text: root.close;
                         clicked => { root.close-clicked(); }
