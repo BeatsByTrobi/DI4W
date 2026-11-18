@@ -5,6 +5,7 @@
 #   ... -Msi <x64 .msi> -MsiArm64 <arm64 .msi>     (both architectures in one manifest)
 #
 # The checksums and product codes come from the .msi files themselves; the download links are the release's.
+# The installer is WiX-built and per-user; the apps are self-contained, so there are no package dependencies.
 # publish-release.ps1 runs this for every release. To publish to winget, see tools/winget-submit.ps1.
 param(
     [Parameter(Mandatory)][string]$Version,
@@ -75,9 +76,6 @@ InstallModes:
 - silent
 - silentWithProgress
 UpgradeBehavior: install
-Dependencies:
-  PackageDependencies:
-  - PackageIdentifier: Microsoft.DotNet.DesktopRuntime.8
 ReleaseDate: $date
 Installers:
 $installers

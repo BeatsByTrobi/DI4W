@@ -3,11 +3,14 @@
 #   powershell -ExecutionPolicy Bypass -File tools/publish-release.ps1 -Version 1.1.0
 #   powershell -ExecutionPolicy Bypass -File tools/publish-release.ps1 -Version 1.1.0 -NotesFile notes.md
 #
-# Steps: set the version in both projects; for x64 and ARM64 publish, sign (if set up, see below), zip as
+# Steps: set the version in Cargo.toml ([workspace.package], shared by both apps); for x64 and Arm64 build the
+# island and the settings app with cargo (tools/build.ps1), sign (if set up, see below), zip as
 # DI4W-v<version>-win-<arch>.zip and build the installer DI4W-v<version>-win-<arch>.msi (see installer/); write the
 # winget manifests; commit and push the version change; create the release "v<version>" with all four attached;
 # then submit the new version to winget if the package is already listed there. Installed apps see the release
-# on their next update check. Needs the GitHub CLI, logged in (gh auth login).
+# on their next update check. Needs Rust (rustup, with the MSVC build tools; for Arm64 also the "MSVC ARM64 build
+# tools"), the .NET SDK (for the WiX installer build) and the GitHub CLI, logged in (gh auth login).
+# -NoArm64 builds x64 only.
 #
 # Code signing (optional; without it Windows SmartScreen warns new users). Either:
 #   -CertThumbprint <thumbprint>        a code-signing certificate in your certificate store (Cert:\CurrentUser\My)
@@ -24,7 +27,7 @@ param(
     [string]$TrustedSigningMetadata = $env:DI4W_TRUSTED_SIGNING_METADATA,
     [string]$TrustedSigningDlib = $env:DI4W_TRUSTED_SIGNING_DLIB
 )
-# Not 'Stop': Windows PowerShell 5.1 then treats any stderr output of git/gh/dotnet (progress, "release not found")
+# Not 'Stop': Windows PowerShell 5.1 then treats any stderr output of git/gh/cargo/dotnet (progress, "release not found")
 # as a fatal error. Native commands are checked through $LASTEXITCODE; cmdlets that must succeed use -ErrorAction Stop.
 $ErrorActionPreference = 'Continue'
 $repo = 'aangeraakt/DI4W'
@@ -68,13 +71,18 @@ function Sign-Files([string[]]$files) {
 
 # ───────────── 1. version ─────────────
 
-# In both projects (the updater compares it with the release tag).
-foreach ($project in 'src\DynamicIsland\DynamicIsland.csproj', 'src\DynamicIsland.Settings\DynamicIsland.Settings.csproj') {
-    $path = Join-Path $root $project
-    $xml = [IO.File]::ReadAllText($path)
-    $xml = [regex]::Replace($xml, '<Version>[^<]*</Version>', "<Version>$Version</Version>")
-    [IO.File]::WriteAllText($path, $xml)
-}
+# The workspace version, shared by both apps (the updater compares it with the release tag).
+$cargoToml = Join-Path $root 'Cargo.toml'
+$toml = [IO.File]::ReadAllText($cargoToml)
+$section = [regex]::Match($toml, '(?ms)^\[workspace\.package\].*?(?=^\[|\z)')
+if (-not $section.Success -or $section.Value -notmatch '(?m)^version\s*=') { throw "No version in [workspace.package] of Cargo.toml." }
+$updated = [regex]::Replace($section.Value, '(?m)^version\s*=\s*"[^"]*"', "version = `"$Version`"")
+$toml = $toml.Substring(0, $section.Index) + $updated + $toml.Substring($section.Index + $section.Length)
+[IO.File]::WriteAllText($cargoToml, $toml, (New-Object Text.UTF8Encoding $false))
+# Record the new version of the workspace's own crates in Cargo.lock (dependencies stay as they are).
+cargo update --workspace --offline
+if ($LASTEXITCODE -ne 0) { cargo update --workspace }
+if ($LASTEXITCODE -ne 0) { throw "Updating Cargo.lock failed." }
 
 # ───────────── 2. build and package, per architecture ─────────────
 
@@ -87,13 +95,11 @@ foreach ($arch in $architectures) {
     # The x64 folder keeps its old name (DI4W), which the zip has always contained.
     $folder = if ($arch -eq 'x64') { 'DI4W' } else { "DI4W-$arch" }
     $app = Join-Path $out $folder
-    dotnet publish src/DynamicIsland -c Release -r "win-$arch" -o $app
+    # DynamicIsland.exe, Settings\DynamicIsland.Settings.exe, tools\island.ps1, LICENSE (see tools/build.ps1).
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'build.ps1') -Arch $arch -Out $app
     if ($LASTEXITCODE -ne 0) { throw "Build failed ($arch)." }
-    Get-ChildItem $app -Recurse -Filter *.pdb | Remove-Item -Force -ErrorAction Stop
 
-    # Our own files; the rest (Microsoft's) is signed already.
-    Sign-Files @((Join-Path $app 'DynamicIsland.exe'), (Join-Path $app 'DynamicIsland.dll'),
-                 (Join-Path $app 'Settings\DynamicIsland.Settings.exe'), (Join-Path $app 'Settings\DynamicIsland.Settings.dll'))
+    Sign-Files @((Join-Path $app 'DynamicIsland.exe'), (Join-Path $app 'Settings\DynamicIsland.Settings.exe'))
 
     $zip = Join-Path $out "DI4W-$tag-win-$arch.zip"
     # The zip always contains a "DI4W" folder, whatever the architecture.
@@ -132,7 +138,7 @@ if ($LASTEXITCODE -ne 0) { throw "Writing the winget manifests failed." }
 # ───────────── 3. commit the version change, so the tag points at the code that was built ─────────────
 
 if (git status --porcelain) {
-    git add src/DynamicIsland/DynamicIsland.csproj src/DynamicIsland.Settings/DynamicIsland.Settings.csproj
+    git add Cargo.toml Cargo.lock
     git commit -m "Release $tag"
     if ($LASTEXITCODE -ne 0) { throw "git commit failed." }
 }
