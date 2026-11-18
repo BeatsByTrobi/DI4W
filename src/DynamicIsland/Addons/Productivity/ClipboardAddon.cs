@@ -65,7 +65,7 @@ public sealed class ClipboardAddon : Addon
                 var text = (data.GetData(DataFormats.UnicodeText) as string ?? "").Trim();
                 if (text.Length == 0) return;
                 var preview = string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-                ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, 46, 20), L.T("Copied"), preview);
+                ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, Ui.IconSize, 22), L.T("Copied"), preview);
             }
             else if (Clipboard.ContainsImage())
             {
@@ -73,12 +73,12 @@ public sealed class ClipboardAddon : Addon
                 if (DateTime.UtcNow - LastScreenshot < TimeSpan.FromSeconds(3)) return;
                 var image = Clipboard.GetImage();
                 if (image is null) return;
-                ShowCopied(Ui.Image(image, 46, 8), L.T("Copied image"), $"{image.PixelWidth} × {image.PixelHeight}");
+                ShowCopied(Ui.Image(image, Ui.IconSize, 12), L.T("Copied image"), $"{image.PixelWidth} × {image.PixelHeight}");
             }
             else if (data.GetDataPresent(DataFormats.FileDrop) && data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
             {
                 var name = System.IO.Path.GetFileName(files[0]);
-                ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, 46, 20), L.T("Copied"), files.Length == 1 ? name : L.F("{0} and {1} more", name, files.Length - 1));
+                ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, Ui.IconSize, 22), L.T("Copied"), files.Length == 1 ? name : L.F("{0} and {1} more", name, files.Length - 1));
             }
         }
         catch (COMException)
@@ -104,13 +104,13 @@ public sealed class ClipboardAddon : Addon
     }
 
     public override void Preview() =>
-        ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, 46, 20), L.T("Copied"), L.T("A preview of the text you copy shows up here"));
+        ShowCopied(Ui.GlyphCircle("", Ui.ButtonBg, Ui.IconSize, 22), L.T("Copied"), L.T("A preview of the text you copy shows up here"));
 
     private void ShowCopied(FrameworkElement icon, string title, string preview)
     {
         _lastShown = DateTime.UtcNow;
         var view = Ui.AlertView(icon, title, preview);
-        Show(new IslandAlert { Content = view, Size = new Size(360, 76), Duration = TimeSpan.FromSeconds(2) });
+        Show(new IslandAlert { Content = view, Duration = TimeSpan.FromSeconds(2) });
     }
 
     [DllImport("user32.dll", SetLastError = true)]

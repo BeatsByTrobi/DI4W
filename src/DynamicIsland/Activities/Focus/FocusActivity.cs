@@ -119,8 +119,7 @@ public sealed class FocusActivity : Activity
             : (next == Phase.LongBreak ? L.T("Long break") : L.T("Break time"), L.F("{0} min · nice work", (int)_length.TotalMinutes));
         _manager.ShowAlert(new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle(next == Phase.Focus ? "" : "", Color, 46, 20), title, subtitle, Color),
-            Size = new Size(360, 76),
+            Content = Ui.AlertView(Ui.GlyphCircle(next == Phase.Focus ? "" : "", Color, Ui.IconSize, 22), title, subtitle, Color),
             Duration = TimeSpan.FromSeconds(5),
             BreaksThroughQuiet = true,
         });

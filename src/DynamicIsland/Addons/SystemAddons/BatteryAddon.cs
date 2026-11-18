@@ -84,13 +84,12 @@ public sealed class BatteryAddon : Addon
     {
         var icon = new System.Windows.Controls.Border
         {
-            Width = 46, Height = 46,
+            Width = Ui.IconSize, Height = Ui.IconSize,
             Child = Icons.Battery(percent / 100.0, charging, color, 34),
         };
         Show(new IslandAlert
         {
             Content = Ui.AlertView(icon, title, subtitle, color == Ui.Primary ? null : color),
-            Size = new Size(360, 76),
             Duration = TimeSpan.FromSeconds(urgent ? 8 : 3.5),
             StickyUntilHover = urgent,
             BreaksThroughQuiet = urgent,

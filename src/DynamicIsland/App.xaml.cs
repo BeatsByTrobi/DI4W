@@ -284,9 +284,8 @@ public partial class App : Application
         var reporting = false;
         var alert = new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Orange, 46, 20), L.T("Dynamic Island closed unexpectedly"),
+            Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Orange, Ui.IconSize, 22), L.T("Dynamic Island closed unexpectedly"),
                                    L.T("Click to report it. You see everything before anything is sent.")),
-            Size = new Size(420, 76),
             Duration = TimeSpan.FromSeconds(10),
             StickyUntilHover = true,
             OnClick = () =>
@@ -396,7 +395,7 @@ public partial class App : Application
         _announcedUpdate = version;
         _manager.ShowAlert(new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle(Icons.UpdateGlyph, Ui.Blue, 46, 20),
+            Content = Ui.AlertView(Ui.GlyphCircle(Icons.UpdateGlyph, Ui.Blue, Ui.IconSize, 22),
                                    L.T("Update available"), L.F("Version {0} is ready. Click to install.", version)),
             Duration = TimeSpan.FromSeconds(8),
             StickyUntilHover = true,

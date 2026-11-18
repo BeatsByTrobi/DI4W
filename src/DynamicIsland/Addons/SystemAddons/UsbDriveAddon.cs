@@ -97,8 +97,7 @@ public sealed class UsbDriveAddon : Addon
 
     private void Announce(string name, string subtitle, bool connected, Action? onClick) => Show(new IslandAlert
     {
-        Content = Ui.AlertView(Ui.GlyphCircle("", connected ? Ui.Teal : Ui.ButtonBg, 46, 20), name, subtitle),
-        Size = new Size(360, 76),
+        Content = Ui.AlertView(Ui.GlyphCircle("", connected ? Ui.Teal : Ui.ButtonBg, Ui.IconSize, 22), name, subtitle),
         Duration = TimeSpan.FromSeconds(3.5),
         OnClick = onClick,
     });

@@ -29,7 +29,7 @@ public sealed class ScreenshotAddon : Addon
 
     /// <summary>The real pop-up shows the screenshot itself; the sample has a camera icon instead.</summary>
     public override void Preview() =>
-        ShowSaved(Ui.GlyphCircle("", Ui.ButtonBg, 46, 20), $"{L.T("Screenshot")} {DateTime.Now:yyyy-MM-dd HHmmss}.png", () => { }, null);
+        ShowSaved(Ui.GlyphCircle("", Ui.ButtonBg, Ui.IconSize, 22), $"{L.T("Screenshot")} {DateTime.Now:yyyy-MM-dd HHmmss}.png", () => { }, null);
 
     protected override void Start()
     {
@@ -57,7 +57,7 @@ public sealed class ScreenshotAddon : Addon
         var thumbnail = await LoadThumbnail(path);
         if (thumbnail is null) return;
 
-        ShowSaved(Ui.Image(thumbnail, 46, 8), Path.GetFileName(path),
+        ShowSaved(Ui.Image(thumbnail, Ui.IconSize, 12), Path.GetFileName(path),
                   () => Process.Start("explorer.exe", $"/select,\"{path}\""),
                   () => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }));
     }
@@ -70,7 +70,6 @@ public sealed class ScreenshotAddon : Addon
         Show(new IslandAlert
         {
             Content = Ui.AlertView(picture, L.T("Screenshot saved"), name, accessory: folderButton),
-            Size = new Size(380, 76),
             Duration = TimeSpan.FromSeconds(4),
             OnClick = open,
         });

@@ -27,7 +27,7 @@ public sealed partial class NotificationPresenter
     {
         var preset = ChatApps.Find(n.App);
         var color = preset is null ? Ui.DiscordBlurple : Ui.Brush(preset.Color);
-        FrameworkElement icon = n.Logo is not null ? Ui.Image(n.Logo, 46, 12) : Ui.GlyphCircle(Icons.ChatGlyph, color, 46, 20);
+        FrameworkElement icon = n.Logo is not null ? Ui.Image(n.Logo, Ui.IconSize, 12) : Ui.GlyphCircle(Icons.ChatGlyph, color, Ui.IconSize, 22);
         var processes = preset?.Processes ?? new[] { n.App.Replace(" ", "") };
         void Open() => FocusFirst(processes);
 
@@ -40,7 +40,7 @@ public sealed partial class NotificationPresenter
         _manager.ShowAlert(new IslandAlert
         {
             Content = Ui.AlertView(icon, n.Title, n.Body),
-            Size = new Size(400, string.IsNullOrEmpty(n.Body) || n.Body.Length < 40 ? 76 : 88),
+            Size = new Size(Ui.AlertWidth, string.IsNullOrEmpty(n.Body) || n.Body.Length < 40 ? Ui.AlertHeight : 100),
             Duration = TimeSpan.FromSeconds(5),
             OnClick = Open,
         });
@@ -64,7 +64,6 @@ public sealed partial class NotificationPresenter
         alert = new IslandAlert
         {
             Content = Ui.AlertView(icon, caller, L.F("Incoming call · {0}", app), accessory: buttons),
-            Size = new Size(420, 84),
             Duration = TimeSpan.FromSeconds(30),
             OnClick = open,
         };

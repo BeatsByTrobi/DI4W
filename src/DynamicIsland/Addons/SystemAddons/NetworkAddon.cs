@@ -93,8 +93,7 @@ public sealed class NetworkAddon : Addon
 
     private void Announce(string title, string subtitle, string glyph, System.Windows.Media.Brush color) => Show(new IslandAlert
     {
-        Content = Ui.AlertView(Ui.GlyphCircle(glyph, color, 46, 20), title, subtitle),
-        Size = new Size(380, 76),
+        Content = Ui.AlertView(Ui.GlyphCircle(glyph, color, Ui.IconSize, 22), title, subtitle),
         Duration = TimeSpan.FromSeconds(3.5),
     });
 }

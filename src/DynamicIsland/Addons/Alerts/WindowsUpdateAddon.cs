@@ -57,20 +57,19 @@ public sealed class WindowsUpdateAddon : Addon
     private void Prompt(Action onRestart)
     {
         IslandAlert? alert = null;
-        var later = Ui.Button(Ui.Text(L.T("Later"), 13, FontWeights.SemiBold, Ui.Primary), () => Context.Manager.DismissAlert(alert), Ui.ButtonBg, 64, 32);
-        var restart = Ui.Button(Ui.Text(L.T("Restart"), 13, FontWeights.SemiBold, System.Windows.Media.Brushes.Black), () =>
+        var later = Ui.ActionButton(L.T("Later"), () => Context.Manager.DismissAlert(alert));
+        var restart = Ui.ActionButton(L.T("Restart"), () =>
         {
             Context.Manager.DismissAlert(alert);
             onRestart();
-        }, Ui.Blue, 76, 32);
-        later.Padding = restart.Padding = new Thickness(0);
-        restart.Margin = new Thickness(8, 0, 0, 0);
+        }, Ui.Blue);
 
         alert = new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Blue, 46, 20), L.T("Updates are ready"),
-                                   L.T("Restart to finish installing"), accessory: new StackPanel { Orientation = Orientation.Horizontal, Children = { later, restart } }),
-            Size = new Size(440, 76),
+            Content = Ui.ActionAlertView(Ui.GlyphCircle("", Ui.Blue, Ui.IconSize, 22), L.T("Updates are ready"),
+                                         L.T("Restart to finish installing"), later, restart),
+            Size = new Size(Ui.AlertWidth, Ui.ActionAlertHeight),
+            Keyline = Ui.Blue.Color,
             Duration = TimeSpan.FromSeconds(15),
             StickyUntilHover = true,
         };
@@ -83,18 +82,18 @@ public sealed class WindowsUpdateAddon : Addon
         Run("shutdown.exe", $"/r /t 60 /c \"{L.T("Restarting to finish Windows updates")}\"");
 
         IslandAlert? countdown = null;
-        var cancel = Ui.Button(Ui.Text(L.T("Cancel"), 13, FontWeights.SemiBold, Ui.Primary), () =>
+        var cancel = Ui.ActionButton(L.T("Cancel"), () =>
         {
             Run("shutdown.exe", "/a");
             _restarting = false;
             Context.Manager.DismissAlert(countdown);
-        }, Ui.Red, 72, 32);
-        cancel.Padding = new Thickness(0);
+        }, Ui.Red);
         countdown = new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Blue, 46, 20), L.T("Restarting in 1 minute"),
-                                   L.T("Save your work"), accessory: cancel),
-            Size = new Size(400, 76),
+            Content = Ui.ActionAlertView(Ui.GlyphCircle("", Ui.Blue, Ui.IconSize, 22), L.T("Restarting in 1 minute"),
+                                         L.T("Save your work"), cancel),
+            Size = new Size(Ui.AlertWidth, Ui.ActionAlertHeight),
+            Keyline = Ui.Red.Color,
             Sticky = true,
             BreaksThroughQuiet = true,
         };

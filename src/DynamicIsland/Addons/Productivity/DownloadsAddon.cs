@@ -177,9 +177,8 @@ public sealed class DownloadsAddon : Addon
 
     private void ShowComplete(string name, long size, Action? onClick) => Show(new IslandAlert
     {
-        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Blue, 46, 20), L.T("Download complete"),
+        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Blue, Ui.IconSize, 22), L.T("Download complete"),
                                $"{name}{(size > 0 ? $" · {UsbDriveAddon.FormatSize(size)}" : "")}"),
-        Size = new Size(380, 76),
         Duration = TimeSpan.FromSeconds(4),
         OnClick = onClick,
     });

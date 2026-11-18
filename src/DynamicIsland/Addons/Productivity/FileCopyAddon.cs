@@ -82,8 +82,7 @@ public sealed partial class FileCopyAddon : Addon
 
     private void AnnounceDone() => Show(new IslandAlert
     {
-        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Teal, 46, 20), L.T("Files copied"), L.T("File Explorer finished")),
-        Size = new Size(340, 76),
+        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Teal, Ui.IconSize, 22), L.T("Files copied"), L.T("File Explorer finished")),
         Duration = TimeSpan.FromSeconds(3),
     });
 

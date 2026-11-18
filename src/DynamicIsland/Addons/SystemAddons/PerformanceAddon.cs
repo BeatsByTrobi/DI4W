@@ -87,8 +87,7 @@ public sealed class PerformanceAddon : Addon
 
     private static IslandAlert WarningAlert(string title, string subtitle, bool openTaskManager) => new()
     {
-        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Amber, 46, 20), title, subtitle, Ui.Amber),
-        Size = new Size(400, 76),
+        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Amber, Ui.IconSize, 22), title, subtitle, Ui.Amber),
         Duration = TimeSpan.FromSeconds(6),
         StickyUntilHover = true,
         OnClick = openTaskManager

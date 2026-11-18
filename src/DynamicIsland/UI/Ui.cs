@@ -18,7 +18,8 @@ public static class Palette
 /// <summary>Small factory helpers so every view uses the same iOS-like typography, colors and controls.</summary>
 public static class Ui
 {
-    public static readonly FontFamily Font = new("SF Pro Display, Segoe UI Variable Display, Segoe UI");
+    /// <summary>Apple's San Francisco when it's installed; Windows' own Segoe UI Variable otherwise.</summary>
+    public static readonly FontFamily Font = new("SF Pro Text, SF Pro Display, Segoe UI Variable Text, Segoe UI");
     public static readonly FontFamily IconFont = new("Segoe Fluent Icons, Segoe MDL2 Assets");
 
     /// <summary>The pill itself: black, or iOS' light grey-white.</summary>
@@ -30,7 +31,8 @@ public static class Ui
     /// <summary>Icons on a colored circle or button (always white).</summary>
     public static readonly SolidColorBrush OnColor = Freeze(new SolidColorBrush(Colors.White));
 
-    public static readonly SolidColorBrush Grey = Themed("#8E8E93", "#6C6C70");
+    /// <summary>iOS' secondaryLabel: the second line of an alert, captions, times.</summary>
+    public static readonly SolidColorBrush Grey = Themed("#99EBEBF5", "#993C3C43");
     public static readonly SolidColorBrush Orange = Brush("#FF9F0A");
     public static readonly SolidColorBrush OrangeDim = Themed("#4A3410", "#FFE2B8");
     public static readonly SolidColorBrush AmberDim = Themed("#4A4010", "#FFF1B0");
@@ -44,6 +46,17 @@ public static class Ui
     public static readonly SolidColorBrush Purple = Brush("#BF5AF2");
     public static readonly SolidColorBrush Teal = Brush("#64D2FF");
     public static readonly SolidColorBrush Indigo = Brush("#5E5CE6");
+
+    // Apple's expanded presentation, in points: 371 wide, 84 tall at the least. Content sits at an even 16 from the
+    // edges, which with a 52 icon makes the icon concentric with the island's rounded end.
+    public const double AlertWidth = 371;
+    public const double AlertHeight = 84;
+    public const double IconSize = 52;
+    private const double Margin = 16;
+
+    /// <summary>Height of an alert with a row of buttons under it (<see cref="ActionAlertView"/>).</summary>
+    public const double ActionAlertHeight = Margin + IconSize + 12 + ActionHeight + Margin;
+    private const double ActionHeight = 44;
 
     public static SolidColorBrush Brush(string hex) =>
         Freeze(new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex)));
@@ -143,25 +156,28 @@ public static class Ui
         return border;
     }
 
-    /// <summary>The standard alert layout: icon, bold title, grey subtitle, optional trailing accessory.</summary>
+    /// <summary>
+    /// The standard expanded alert, laid out like Apple's: a 52 icon at an even 16 from the edges, a heavy title, a
+    /// secondary-label second line, and an optional accessory (round buttons) on the trailing side.
+    /// </summary>
     public static FrameworkElement AlertView(UIElement icon, string title, string subtitle,
                                              Brush? titleBrush = null, UIElement? accessory = null)
     {
-        var grid = new Grid { Margin = new Thickness(14, 12, 18, 12) };
+        var grid = new Grid { Margin = new Thickness(Margin), Height = IconSize, VerticalAlignment = VerticalAlignment.Top };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        var iconHost = new Border { Width = 46, Height = 46, VerticalAlignment = VerticalAlignment.Center, Child = icon };
+        var iconHost = new Border { Width = IconSize, Height = IconSize, VerticalAlignment = VerticalAlignment.Center, Child = icon };
         grid.Children.Add(iconHost);
 
-        var stack = new StackPanel { Margin = new Thickness(12, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
-        stack.Children.Add(Text(title, 15, FontWeights.SemiBold, titleBrush ?? Primary));
+        var stack = new StackPanel { Margin = new Thickness(12, 0, accessory is null ? 4 : 10, 0), VerticalAlignment = VerticalAlignment.Center };
+        stack.Children.Add(Text(title, 16, FontWeights.SemiBold, titleBrush ?? Primary));
         if (!string.IsNullOrWhiteSpace(subtitle))
         {
-            var sub = Text(subtitle, 13.5, FontWeights.Normal, Grey);
+            var sub = Text(subtitle, 14.5, FontWeights.Normal, Grey);
             sub.TextWrapping = TextWrapping.Wrap;
-            sub.MaxHeight = 38;
+            sub.MaxHeight = 38; // two lines
             sub.Margin = new Thickness(0, 1, 0, 0);
             stack.Children.Add(sub);
         }
@@ -175,6 +191,39 @@ public static class Ui
             grid.Children.Add(host);
         }
         return grid;
+    }
+
+    /// <summary>An alert with a row of wide capsule buttons under it, like the iPhone's expanded prompts.
+    /// Use with <see cref="ActionAlertHeight"/>.</summary>
+    public static FrameworkElement ActionAlertView(UIElement icon, string title, string subtitle, params Button[] actions)
+    {
+        var header = AlertView(icon, title, subtitle);
+        header.Margin = new Thickness(Margin, Margin, Margin, 0);
+        var row = new System.Windows.Controls.Primitives.UniformGrid
+        {
+            Rows = 1,
+            Margin = new Thickness(Margin - 4, 12, Margin - 4, Margin),
+            Height = ActionHeight,
+        };
+        foreach (var action in actions)
+        {
+            action.Margin = new Thickness(4, 0, 4, 0);
+            action.Height = ActionHeight;
+            row.Children.Add(action);
+        }
+        var stack = new StackPanel();
+        stack.Children.Add(header);
+        stack.Children.Add(row);
+        return stack;
+    }
+
+    /// <summary>A wide capsule button for <see cref="ActionAlertView"/>: grey, or filled with a color for the main action.</summary>
+    public static Button ActionButton(string label, Action onClick, Brush? fill = null)
+    {
+        var text = Text(label, 16, FontWeights.SemiBold, fill is null ? Primary : Brushes.White);
+        var button = Button(text, onClick, fill ?? ButtonBg);
+        System.Windows.Automation.AutomationProperties.SetName(button, label);
+        return button;
     }
 
     /// <summary>A filled circle with a glyph in the middle (fallback app icon). White glyph on a color; on the

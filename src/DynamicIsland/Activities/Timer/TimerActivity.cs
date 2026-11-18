@@ -136,7 +136,7 @@ public sealed class TimerActivity : Activity
         IsActive = false;
 
         var label = Ui.FormatTime(_duration);
-        var icon = Ui.GlyphCircle(Icons.TimerGlyph, Ui.OrangeDim, 46, 22);
+        var icon = Ui.GlyphCircle(Icons.TimerGlyph, Ui.OrangeDim, Ui.IconSize, 22);
         ((TextBlock)icon.Child).Foreground = Ui.Orange;
 
         // Pulse the icon while ringing.
@@ -162,7 +162,6 @@ public sealed class TimerActivity : Activity
         alert = new IslandAlert
         {
             Content = Ui.AlertView(icon, L.T("Timer"), L.F("{0} is done", label), Ui.Orange, stop),
-            Size = new Size(380, 76),
             Sticky = true,
             BreaksThroughQuiet = true,
             OnDismissed = StopAlarm,

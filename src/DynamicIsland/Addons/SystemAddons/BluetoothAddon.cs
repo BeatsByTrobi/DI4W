@@ -38,8 +38,7 @@ public sealed class BluetoothAddon : Addon
         var sample = new Device(L.T("Headphones"), true, true, new[] { "Audio" }, null, false);
         Show(new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle(GlyphFor(sample), Ui.Blue, 46, 20), sample.Name, L.F("Connected · {0}% battery", 80)),
-            Size = new Size(360, 76),
+            Content = Ui.AlertView(Ui.GlyphCircle(GlyphFor(sample), Ui.Blue, Ui.IconSize, 22), sample.Name, L.F("Connected · {0}% battery", 80)),
             Duration = TimeSpan.FromSeconds(3),
         });
     }
@@ -95,11 +94,10 @@ public sealed class BluetoothAddon : Addon
     {
         int? battery = connected ? await BluetoothBattery.ReadAsync(id, device.Container, device.LowEnergy, device.Name) : null;
         var subtitle = connected ? battery is { } b ? L.F("Connected · {0}% battery", b) : L.T("Connected") : L.T("Disconnected");
-        var icon = Ui.GlyphCircle(GlyphFor(device), connected ? Ui.Blue : Ui.ButtonBg, 46, 20);
+        var icon = Ui.GlyphCircle(GlyphFor(device), connected ? Ui.Blue : Ui.ButtonBg, Ui.IconSize, 22);
         Show(new IslandAlert
         {
             Content = Ui.AlertView(icon, device.Name, subtitle),
-            Size = new Size(360, 76),
             Duration = TimeSpan.FromSeconds(3),
         });
     }

@@ -106,7 +106,7 @@ public sealed class IslandApi
         if (Link(body, out var url) is { } linkError) return linkError;
         if (Buttons(body, out var buttons) is { } buttonError) return buttonError;
 
-        var color = Color(body) ?? Ui.Blue;
+        SolidColorBrush color = Color(body) ?? Ui.Blue;
         // With buttons, give people time to choose.
         var seconds = Number(body, "seconds") is { } s ? Math.Clamp(s, 1, 60) : buttons.Count > 0 ? 12 : 5;
         var sticky = body.TryGetProperty("sticky", out var st) && st.ValueKind == JsonValueKind.True;
@@ -115,32 +115,28 @@ public sealed class IslandApi
         var result = _results[id];
         IslandAlert? alert = null;
 
-        FrameworkElement? accessory = null;
-        if (buttons.Count > 0)
+        // Buttons go in a row of wide capsules under the alert, as in the iPhone's expanded prompts.
+        var actions = new List<Button>();
+        for (var i = 0; i < buttons.Count; i++)
         {
-            var row = new StackPanel { Orientation = Orientation.Horizontal };
-            for (var i = 0; i < buttons.Count; i++)
+            var (buttonId, label, buttonUrl) = buttons[i];
+            var primary = i == buttons.Count - 1; // the last one is the main action, as in the island's own prompts
+            actions.Add(Ui.ActionButton(label, () =>
             {
-                var (buttonId, label, buttonUrl) = buttons[i];
-                var primary = i == buttons.Count - 1; // the last one is the main action, as in the island's own prompts
-                var button = Ui.Button(Ui.Text(label, 13, FontWeights.SemiBold, primary ? Brushes.Black : Ui.Primary), () =>
-                {
-                    result.State = "clicked";
-                    result.Button = buttonId;
-                    if (buttonUrl is not null) Open(buttonUrl);
-                    _manager.DismissAlert(alert);
-                }, primary ? color : Ui.ButtonBg, double.NaN, 32);
-                button.Padding = new Thickness(14, 0, 14, 0);
-                if (i > 0) button.Margin = new Thickness(8, 0, 0, 0);
-                row.Children.Add(button);
-            }
-            accessory = row;
+                result.State = "clicked";
+                result.Button = buttonId;
+                if (buttonUrl is not null) Open(buttonUrl);
+                _manager.DismissAlert(alert);
+            }, primary ? color : null));
         }
 
+        var icon = Ui.GlyphCircle(Glyph(body, "info"), color, Ui.IconSize, 22);
+        var message = Text(body, "message", 300) ?? "";
         alert = new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle(Glyph(body, "info"), color, 46, 20), title, Text(body, "message", 300) ?? "", accessory: accessory),
-            Size = new Size(buttons.Count > 0 ? 460 : 400, 76),
+            Content = actions.Count > 0 ? Ui.ActionAlertView(icon, title, message, actions.ToArray()) : Ui.AlertView(icon, title, message),
+            Size = new Size(Ui.AlertWidth, actions.Count > 0 ? Ui.ActionAlertHeight : Ui.AlertHeight),
+            Keyline = color.Color,
             Duration = TimeSpan.FromSeconds(seconds),
             StickyUntilHover = sticky,
             OnClick = () =>
@@ -196,8 +192,7 @@ public sealed class IslandApi
                 {
                     _manager.ShowAlert(new IslandAlert
                     {
-                        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Green, 46, 20), message, Text(body, "detail", 300) ?? ""),
-                        Size = new Size(400, 76),
+                        Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Green, Ui.IconSize, 22), message, Text(body, "detail", 300) ?? ""),
                         Duration = TimeSpan.FromSeconds(4),
                     });
                 }
@@ -272,7 +267,7 @@ public sealed class IslandApi
         ["star"] = "", ["heart"] = "", ["game"] = "", ["sync"] = "",
     };
 
-    private static readonly Dictionary<string, Brush> Colors = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, SolidColorBrush> Colors = new(StringComparer.OrdinalIgnoreCase)
     {
         ["blue"] = Ui.Blue, ["green"] = Ui.Green, ["orange"] = Ui.Orange, ["red"] = Ui.Red, ["purple"] = Ui.Purple,
         ["teal"] = Ui.Teal, ["yellow"] = Ui.Amber, ["indigo"] = Ui.Indigo, ["gray"] = Ui.ButtonBg, ["grey"] = Ui.ButtonBg,
@@ -283,7 +278,7 @@ public sealed class IslandApi
     private static string Glyph(JsonElement body, string fallback) =>
         Text(body, "icon", 20) is { } name && Glyphs.TryGetValue(name, out var glyph) ? glyph : Glyphs[fallback];
 
-    private static Brush? Color(JsonElement body)
+    private static SolidColorBrush? Color(JsonElement body)
     {
         if (Text(body, "color", 20) is not { } value) return null;
         if (Colors.TryGetValue(value, out var named)) return named;

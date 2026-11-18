@@ -150,19 +150,23 @@ public sealed partial class CalendarAddon : Addon
         var times = $"{m.Start.ToLocalTime():t}–{m.End.ToLocalTime():t}";
         var place = !string.IsNullOrWhiteSpace(m.Location) && m.JoinUrl is null ? $" · {m.Location}" : "";
 
-        FrameworkElement? join = null;
-        if (m.JoinUrl is { } url)
-        {
-            var button = Ui.Button(Ui.Text(L.T("Join"), 14, FontWeights.SemiBold, System.Windows.Media.Brushes.Black),
-                                   () => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }), Ui.Green, 64, 32);
-            button.Padding = new Thickness(0);
-            join = button;
-        }
+        // A meeting with an online link gets a wide Join button under it, like the iPhone's expanded prompts.
+        IslandAlert? alert = null;
+        var icon = Ui.GlyphCircle("", Ui.Red, Ui.IconSize, 22);
+        var detail = $"{when} · {times}{place}";
+        var join = m.JoinUrl is { } url
+            ? Ui.ActionButton(L.T("Join"), () =>
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                Context.Manager.DismissAlert(alert);
+            }, Ui.Green)
+            : null;
 
-        Show(new IslandAlert
+        Show(alert = new IslandAlert
         {
-            Content = Ui.AlertView(Ui.GlyphCircle("", Ui.Red, 46, 20), m.Title, $"{when} · {times}{place}", accessory: join),
-            Size = new Size(420, 76),
+            Content = join is null ? Ui.AlertView(icon, m.Title, detail) : Ui.ActionAlertView(icon, m.Title, detail, join),
+            Size = new Size(Ui.AlertWidth, join is null ? Ui.AlertHeight : Ui.ActionAlertHeight),
+            Keyline = Ui.Red.Color,
             Duration = TimeSpan.FromSeconds(10),
             StickyUntilHover = true,
         });

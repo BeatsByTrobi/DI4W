@@ -128,11 +128,10 @@ public sealed class WeatherAddon : Addon
 
     private void RainAlert(int minutes, string place) => Show(new IslandAlert
     {
-        Content = Ui.AlertView(new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(23), Background = Ui.Blue,
+        Content = Ui.AlertView(new Border { Width = Ui.IconSize, Height = Ui.IconSize, CornerRadius = new CornerRadius(Ui.IconSize / 2), Background = Ui.Blue,
                                             Child = new TextBlock { Text = "☂", FontFamily = Symbols, FontSize = 22, Foreground = Ui.OnColor,
                                                                     HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
                                L.F("Rain in about {0} min", minutes), place),
-        Size = new Size(360, 76),
         Duration = TimeSpan.FromSeconds(6),
     });
 
