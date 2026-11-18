@@ -289,7 +289,7 @@ export component AddonsPage inherits Page {
         spacing: 8px;
         Rectangle {
             max-width: 420px;
-            horizontal-stretch: 1;
+            horizontal-stretch: 100;
             search := LineEdit {
                 width: 100%;
                 text <=> Addons.search;
@@ -305,8 +305,9 @@ export component AddonsPage inherits Page {
                 color: Theme.text-secondary;
             }
         }
-        Rectangle { horizontal-stretch: 0.0001; }
+        Rectangle { horizontal-stretch: 1; }
         ComboBox {
+            horizontal-stretch: 0;
             min-width: 150px;
             model: [L.t("All add-ons"), L.t("Turned on"), L.t("Turned off")];
             current-index <=> Addons.filter;

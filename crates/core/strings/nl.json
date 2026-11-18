@@ -387,5 +387,12 @@
   "Offer to report crashes": "Aanbieden om crashes te melden",
   "If the island ever closes because of an error, it asks the next time it starts whether you want to report it. Nothing is sent unless you choose to.": "Als het eiland ooit door een fout sluit, vraagt het bij de volgende start of je dat wilt melden. Er wordt niets verstuurd tenzij je daarvoor kiest.",
   "Deutsch": "Deutsch",
-  "Français": "Français"
+  "Français": "Français",
+  "Close": "Sluiten",
+  "Minimize": "Minimaliseren",
+  "Maximize": "Maximaliseren",
+  "Open Navigation": "Navigatie openen",
+  "Close Navigation": "Navigatie sluiten",
+  "OK": "OK",
+  "…": "…"
 }

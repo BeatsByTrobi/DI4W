@@ -387,5 +387,12 @@
   "Dynamic Island closed unexpectedly": "Dynamic Island s'est fermée de façon inattendue",
   "Click to report it. You see everything before anything is sent.": "Cliquez pour le signaler. Vous voyez tout avant que quoi que ce soit ne soit envoyé.",
   "Offer to report crashes": "Proposer de signaler les plantages",
-  "If the island ever closes because of an error, it asks the next time it starts whether you want to report it. Nothing is sent unless you choose to.": "Si l'île se ferme à cause d'une erreur, elle vous demande au prochain démarrage si vous voulez le signaler. Rien n'est envoyé sans votre accord."
+  "If the island ever closes because of an error, it asks the next time it starts whether you want to report it. Nothing is sent unless you choose to.": "Si l'île se ferme à cause d'une erreur, elle vous demande au prochain démarrage si vous voulez le signaler. Rien n'est envoyé sans votre accord.",
+  "Close": "Fermer",
+  "Minimize": "Réduire",
+  "Maximize": "Agrandir",
+  "Open Navigation": "Ouvrir la navigation",
+  "Close Navigation": "Fermer la navigation",
+  "OK": "OK",
+  "…": "…"
 }
