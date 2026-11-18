@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using DynamicIsland.Core;
 using Microsoft.Win32;
 
@@ -35,8 +36,10 @@ public sealed class AppSettings
 
     public int MediaHideAfterPauseSeconds { get; set; } = 10;
 
-    public bool ClaudeEnabled { get; set; } = true;
-    public int ClaudePort { get; set; } = 47823;
+    /// <summary>Settings files from 1.x kept the Island API's port here (it was shared with Claude Code); read once
+    /// and moved to <see cref="AddonSettings.IslandApiPort"/>, never written.</summary>
+    [JsonInclude, JsonPropertyName("ClaudePort"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    internal int? LegacyPort { get; set; }
 
     public bool NotificationsEnabled { get; set; } = true;
 
@@ -93,7 +96,7 @@ public sealed class AppSettings
         {
             if (File.Exists(FilePath))
             {
-                return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath)) ?? new AppSettings();
+                return Parse(File.ReadAllText(FilePath)) ?? new AppSettings();
             }
         }
         catch (Exception ex)
@@ -151,12 +154,25 @@ public sealed class AppSettings
         try
         {
             using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            return JsonSerializer.Deserialize<AppSettings>(stream);
+            using var reader = new StreamReader(stream);
+            return Parse(reader.ReadToEnd());
         }
         catch
         {
             return null;
         }
+    }
+
+    /// <summary>Reads settings JSON (a file, or an imported backup), moving values older versions kept elsewhere.</summary>
+    public static AppSettings? Parse(string json)
+    {
+        var s = JsonSerializer.Deserialize<AppSettings>(json);
+        if (s?.LegacyPort is int port)
+        {
+            s.Addons.IslandApiPort = port;
+            s.LegacyPort = null;
+        }
+        return s;
     }
 
     public void Save()
@@ -239,8 +255,11 @@ public sealed class AddonSettings
     public bool GameMode { get; set; } = false;
 
     // Developers
-    /// <summary>Local API (127.0.0.1, same port as Claude Code) so scripts can show alerts and progress.</summary>
+    /// <summary>Local API (127.0.0.1) so scripts can show alerts and progress.</summary>
     public bool IslandApi { get; set; } = true;
+
+    /// <summary>The Island API's port on 127.0.0.1 (scripts can read DYNAMIC_ISLAND_PORT).</summary>
+    public int IslandApiPort { get; set; } = 47823;
 
     /// <summary>Per add-on (keyed by its switch, e.g. "Clipboard"): when its pop-ups stay away.</summary>
     public Dictionary<string, AddonQuiet> Quiet { get; set; } = new();
@@ -284,7 +303,6 @@ public static class ActivityKinds
         ("Focus", "Focus timer"),
         ("Timer", "Timer"),
         ("Stopwatch", "Stopwatch"),
-        ("Claude", "Claude Code"),
         ("Downloads", "Downloads"),
         ("Api", "Island API progress"),
         ("FileCopy", "File copies"),

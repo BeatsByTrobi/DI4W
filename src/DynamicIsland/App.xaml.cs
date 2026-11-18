@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using DynamicIsland.Activities.Api;
-using DynamicIsland.Activities.Claude;
 using DynamicIsland.Activities.Focus;
 using DynamicIsland.Activities.Stopwatches;
 using DynamicIsland.Activities.Media;
@@ -36,7 +35,7 @@ public partial class App : Application
     private FocusActivity _focus = null!;
     private StopwatchActivity _stopwatch = null!;
     private NotificationService _notifications = null!;
-    private ClaudeHookServer? _hookServer;
+    private LocalServer? _server;
     private AddonHost? _addons;
     private FileSystemWatcher? _settingsWatcher;
     private DispatcherTimer? _reloadDebounce;
@@ -112,9 +111,6 @@ public partial class App : Application
         _stopwatch = new StopwatchActivity();
         _manager.Register(_stopwatch);
 
-        var claude = new ClaudeActivity(_manager, _settings);
-        _manager.Register(claude);
-
         var mediaService = new MediaService(_settings, Dispatcher);
         var media = new MediaActivity(mediaService, _settings);
         _manager.Register(media);
@@ -149,25 +145,12 @@ public partial class App : Application
         // A fresh install: show the welcome tour in the settings app once the island is up (the app marks it shown).
         if (!_settings.WelcomeShown) _ = Dispatcher.BeginInvoke(() => OpenSettings("--welcome"), DispatcherPriority.ApplicationIdle);
 
-        // Integrations
-        // One local server for Claude Code hooks (/claude/...) and the Island API (/alert, /progress).
-        var claudeOn = _settings.ClaudeEnabled;
-        var api = _settings.Addons.IslandApi ? new IslandApi(_manager, Dispatcher) : null;
-        if (claudeOn || api is not null)
+        // The Island API: scripts on this PC show pop-ups and progress (/alert, /progress).
+        if (_settings.Addons.IslandApi)
         {
-            _hookServer = new ClaudeHookServer(_settings.ClaudePort, request =>
-            {
-                if (request.Path.StartsWith("/claude/", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!claudeOn) return LocalResponse.Error(404, "Claude Code is turned off in the settings.");
-                    var kind = request.Path["/claude/".Length..].Trim('/').ToLowerInvariant();
-                    Dispatcher.BeginInvoke(() => claude.Handle(kind, request.Body));
-                    return LocalResponse.Ok;
-                }
-                if (request.Path == "/") return LocalResponse.Ok;
-                return api?.Handle(request);
-            });
-            _hookServer.Start();
+            var api = new IslandApi(_manager, Dispatcher);
+            _server = new LocalServer(_settings.Addons.IslandApiPort, request => request.Path == "/" ? LocalResponse.Ok : api.Handle(request));
+            _server.Start();
         }
 
         _notifications = new NotificationService(_settings, Dispatcher);
@@ -182,7 +165,7 @@ public partial class App : Application
     {
         _settingsWatcher?.Dispose();
         _quitSignal?.Dispose();
-        _hookServer?.Dispose();
+        _server?.Dispose();
         _addons?.Shutdown();
         AudioLevelMeter.Shared.Dispose();
         _tray?.Dispose();
@@ -258,8 +241,7 @@ public partial class App : Application
         if (updated is null) return; // half-written or locked; the next change event retries
 
         // These are wired up once at startup, so changing them restarts the island.
-        var needsRestart = updated.ClaudeEnabled != _settings.ClaudeEnabled
-                           || updated.ClaudePort != _settings.ClaudePort
+        var needsRestart = updated.Addons.IslandApiPort != _settings.Addons.IslandApiPort
                            || updated.MediaEnabled != _settings.MediaEnabled
                            || updated.Addons.IslandApi != _settings.Addons.IslandApi
                            || updated.Language != _settings.Language

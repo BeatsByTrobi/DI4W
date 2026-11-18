@@ -101,7 +101,7 @@ public sealed class WelcomeDialog : ContentDialog
             Children =
             {
                 preview,
-                Paragraph(L.T("The island at the top of your screen shows what's going on, like on an iPhone: music, timers, Claude Code, messages from your chat apps and more.")),
+                Paragraph(L.T("The island at the top of your screen shows what's going on, like on an iPhone: music, timers, downloads, messages from your chat apps and more.")),
                 Tip("", L.T("Point at it to see more, and click it to open it.")),
                 Tip("", L.T("Click the empty island to start a timer, focus session or stopwatch.")),
                 Tip("", L.T("Right-click it for the menu. The tray icon has the same menu.")),

@@ -34,10 +34,8 @@ public static class Ui
     public static readonly SolidColorBrush Orange = Brush("#FF9F0A");
     public static readonly SolidColorBrush OrangeDim = Themed("#4A3410", "#FFE2B8");
     public static readonly SolidColorBrush AmberDim = Themed("#4A4010", "#FFF1B0");
-    public static readonly SolidColorBrush ClaudeDim = Themed("#2A1A14", "#F6DDD3");
     public static readonly SolidColorBrush Green = Brush("#30D158");
     public static readonly SolidColorBrush Amber = Brush("#FFD60A");
-    public static readonly SolidColorBrush ClaudeOrange = Brush("#D97757");
     public static readonly SolidColorBrush Track = Themed("#3A3A3C", "#D1D1D6");
     public static readonly SolidColorBrush ButtonBg = Themed("#2C2C2E", "#E5E5EA");
     public static readonly SolidColorBrush DiscordBlurple = Brush("#5865F2");
@@ -297,45 +295,4 @@ public static class Icons
             Height = size,
         };
     }
-
-    /// <summary>The Claude "spark": tapered rays of varying length around a centre.</summary>
-    public static Geometry ClaudeSpark { get; } = BuildSpark();
-
-    private static Geometry BuildSpark()
-    {
-        var g = new StreamGeometry();
-        double[] lengths = { 1.0, 0.78, 0.92, 0.7, 0.98, 0.8, 0.9, 0.74, 1.0, 0.82, 0.88, 0.72 };
-        using (var ctx = g.Open())
-        {
-            for (var i = 0; i < lengths.Length; i++)
-            {
-                var a = i * Math.PI * 2 / lengths.Length + 0.13;
-                var len = 50 * lengths[i];
-                var w = 5.2;
-                var dir = new Vector(Math.Cos(a), Math.Sin(a));
-                var perp = new Vector(-dir.Y, dir.X);
-                var c = new Point(50, 50);
-                var inner = c + dir * 6;
-                var outer = c + dir * len;
-                ctx.BeginFigure(inner + perp * (w * 0.55), true, true);
-                ctx.LineTo(outer + perp * (w * 0.5), true, true);
-                ctx.ArcTo(outer - perp * (w * 0.5), new Size(w * 0.5, w * 0.5), 0, false, SweepDirection.Clockwise, true, true);
-                ctx.LineTo(inner - perp * (w * 0.55), true, true);
-            }
-        }
-        g.Freeze();
-        return g;
-    }
-
-    public static Path Claude(double size) => new()
-    {
-        Data = ClaudeSpark,
-        Fill = Ui.ClaudeOrange,
-        Stretch = Stretch.Uniform,
-        Width = size,
-        Height = size,
-        HorizontalAlignment = HorizontalAlignment.Center,
-        VerticalAlignment = VerticalAlignment.Center,
-        RenderTransformOrigin = new Point(0.5, 0.5),
-    };
 }

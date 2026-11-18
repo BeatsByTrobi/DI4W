@@ -59,7 +59,7 @@ public sealed partial class AddonsPage : Page
         Section(L.T("For developers"));
         Expander(nameof(AddonSettings.IslandApi), L.T("Island API"),
                  L.T("Lets scripts and apps on this PC show their own pop-ups and progress in the island. Web pages can't use it. The island restarts to apply this."),
-                 "", ApiExample());
+                 "", Number(L.T("Port"), nameof(AddonSettings.IslandApiPort), 1024, 65535, ""), ApiExample());
 
         Layout();
         Search.PlaceholderText = L.T("Search add-ons");
@@ -198,7 +198,7 @@ public sealed partial class AddonsPage : Page
 
     private static SettingsCard ApiExample()
     {
-        var port = SettingsStore.Current.ClaudePort;
+        var port = SettingsStore.Current.Addons.IslandApiPort;
         var example =
             $"curl -X POST http://127.0.0.1:{port}/alert -H \"Content-Type: application/json\" -d \"{{\\\"title\\\":\\\"Backup done\\\",\\\"icon\\\":\\\"success\\\"}}\"\n\n" +
             L.T("PowerShell (the helper script is in the app's tools folder):") + "\n" +

@@ -6,7 +6,7 @@
 
 The iPhone Dynamic Island, rebuilt for the Windows desktop.
 
-A small black pill sits at the top-center of your screen. It changes shape to show what is going on: music playing, Claude working, a timer counting down, a download finishing, or a new message.
+A small black pill sits at the top-center of your screen. It changes shape to show what is going on: music playing, a timer counting down, a download finishing, or a new message.
 
 <p align="center">
   <img src="docs/picker.png" alt="Timer picker with Timer, Focus and Stopwatch" height="150">
@@ -15,13 +15,9 @@ A small black pill sits at the top-center of your screen. It changes shape to sh
 </p>
 <p align="center">
   <img src="docs/download.png" alt="Download complete alert" height="76">
-  &nbsp;
-  <img src="docs/claude-done.png" alt="Claude is done alert" height="76">
 </p>
 <p align="center">
   <img src="docs/weather.png" alt="Weather in the empty island" height="40">
-  &nbsp;
-  <img src="docs/split-timer-claude.png" alt="Timer with Claude in the side bubble" height="40">
 </p>
 
 ## Features
@@ -29,7 +25,6 @@ A small black pill sits at the top-center of your screen. It changes shape to sh
 | | In the pill | Click to expand |
 |---|---|---|
 | 🎵 **Spotify** | Album art and live audio bars, tinted to match the album art | Art, title and artist, a seekable progress bar, ⏮ ⏯ ⏭ |
-| ✳️ **Claude Code** | Spinning Claude logo and elapsed time while Claude works | Every running session with its project and time |
 | ⏱️ **Timer** | Orange timer icon and countdown | Pause/resume, cancel and a large countdown |
 | 🍅 **Focus timer** | Red progress ring and countdown; work and break periods run back to back | Pause, skip to the next period, stop |
 | ⏲️ **Stopwatch** | Counts up | Pause/resume, stop, tenths of a second |
@@ -63,7 +58,7 @@ It also includes:
 
 - **iOS-style animation.** The pill springs between sizes with a small bounce, and content fades in with a blur.
 - **Two at once.** When two things are active, the second shows as a small circle next to the pill, as on the iPhone. Click it to swap them.
-- **Alerts.** "Claude is done", "Claude needs you", "Timer done", messages and add-on pop-ups open and close again by themselves. They stay open while your mouse is over them.
+- **Alerts.** "Timer done", "Download complete", messages and add-on pop-ups open and close again by themselves. They stay open while your mouse is over them.
 - **Stays out of the way.** It never takes keyboard focus, you can click through everything around the pill, and it hides while a fullscreen game or video is playing.
 - **Lightweight.** Native C# and WPF, with a separate WinUI 3 settings app. Spotify works without a Spotify account or API key. With Windows' battery saver on, it redraws less often and skips blur and shadow effects.
 - **Any display.** Pick the display it sits on, or let it follow your mouse. It stays below a taskbar that's at the top of the screen.
@@ -114,7 +109,7 @@ This publishes the island and the settings app (`publish\Settings\`) in one go. 
 |---|---|
 | **Click the empty island** | Opens the timer picker. Choose a preset, or scroll over the minutes/seconds, then press **Start**. The **Recent** tab lists the latest alerts. |
 | **Point at the music** | Play/pause and next appear in the pill. |
-| **Click an activity** | Expands it (music player, timer controls, Claude sessions). |
+| **Click an activity** | Expands it (music player, timer controls, downloads). |
 | **Move the mouse away** | Collapses it again. |
 | **Click the small circle** | Swaps the second activity into the main pill. |
 | **Click an alert** | Opens the app it came from and closes the alert. |
@@ -132,37 +127,6 @@ No setup is needed. Open Spotify and play something. The island reads Windows' b
 
 To show other players too (browser, Apple Music and so on), turn on **Show any media player** under **Music** in the settings app.
 
-### ✳️ Claude Code
-
-Run this once to connect Claude Code to the island:
-
-```bash
-powershell -ExecutionPolicy Bypass -File tools/install-claude-hooks.ps1
-```
-
-This adds four [hooks](https://docs.claude.com/en/docs/claude-code/hooks) to `~/.claude/settings.json`. Your other settings are kept, and a `.bak` backup is made first.
-
-| Claude Code event | Island shows |
-|---|---|
-| You send a prompt | "Claude is working" with a timer |
-| Claude finishes | **Claude is done** with the project name and how long it took |
-| Claude needs permission or input | **Claude needs you** (amber, stays until you hover it) |
-| Session closes | The working activity disappears |
-
-The hooks only apply to Claude Code sessions started *after* you install them. To remove them again:
-
-```bash
-powershell -ExecutionPolicy Bypass -File tools/install-claude-hooks.ps1 -Uninstall
-```
-
-<details>
-<summary>Test it without Claude</summary>
-
-```powershell
-Invoke-RestMethod -Method Post http://127.0.0.1:47823/claude/stop -Body '{"cwd":"C:\\my-project"}'
-```
-</details>
-
 ### 💬 Discord
 
 1. Make sure desktop notifications are **on** in Discord (**User Settings → Notifications**).
@@ -173,7 +137,7 @@ You can add other apps, such as WhatsApp or Outlook, under **Notifications** in 
 
 ## Settings
 
-Choose **Open settings** from the tray or right-click menu. It is a separate WinUI 3 app in the Windows 11 Settings style, with macOS-style red, yellow and green window buttons in the top-left corner. Changes save immediately and the island applies them right away. Turning music or Claude Code on or off, changing the port, the language or the theme restarts the island by itself.
+Choose **Open settings** from the tray or right-click menu. It is a separate WinUI 3 app in the Windows 11 Settings style, with macOS-style red, yellow and green window buttons in the top-left corner. Changes save immediately and the island applies them right away. Turning music or the Island API on or off, changing the port, the language or the theme restarts the island by itself.
 
 Each add-on shows its state under its switch, for example "Set your city below" for the weather, or "Next: Stand-up at 9:00" for the calendar. Orange means something needs your attention.
 
@@ -190,8 +154,7 @@ Everything is stored in `%AppData%\DynamicIsland\settings.json`. You can also ed
 | `MediaEnabled` | `true` | Show the music activity |
 | `MediaAnyPlayer` | `false` | Show players other than Spotify |
 | `MediaHideAfterPauseSeconds` | `10` | How long the music activity stays after you pause |
-| `ClaudeEnabled` | `true` | Listen for Claude Code hooks |
-| `ClaudePort` | `47823` | Local port for the hooks (also set `DYNAMIC_ISLAND_PORT` for the hook script if you change it) |
+| `Addons.IslandApiPort` | `47823` | Local port of the Island API (also set `DYNAMIC_ISLAND_PORT` for `island.ps1` if you change it) |
 | `NotificationsEnabled` | `true` | Show notification pop-outs |
 | `NotificationApps` | `["Discord"]` | Apps whose notifications pop out of the island |
 | `Sounds` | `true` | Chimes for alerts and the timer alarm |
@@ -251,7 +214,7 @@ The tests cover the logic that decides things: shortcut parsing, chat-app and ca
 
 ## Island API
 
-Scripts and apps on your PC can show their own pop-ups and progress in the island. The API listens on `http://127.0.0.1:47823` (the Claude Code port), only for programs on this PC. Requests from web pages are refused. You can turn it off under **Settings → Add-ons → Island API**.
+Scripts and apps on your PC can show their own pop-ups and progress in the island. The API listens on `http://127.0.0.1:47823` (change the port under **Settings → Add-ons → Island API**), only for programs on this PC. Requests from web pages are refused. You can turn it off under **Settings → Add-ons → Island API**.
 
 **A pop-up**
 
@@ -294,7 +257,6 @@ island.ps1 -Progress backup -Done -Title "Backup done"
 
 - **Nothing happens with Spotify.** Make sure Spotify is the desktop app, not the web player, or turn on **Show any media player**.
 - **The audio bars don't move.** The bars react to what your speakers play. If no audio device is available, they fall back to a simple animation.
-- **No Claude alerts.** Start a *new* Claude Code session after installing the hooks, and check that the island is running.
 - **No Discord pop-ups.** Check that notification access is allowed under **Windows Settings → Privacy & security → Notifications**, and that Discord's own notifications are on.
 - **Something else.** Use **Settings → About → Report a problem**. It fills in a GitHub issue with your version and the latest log lines, which you can check and edit before anything is sent.
 
@@ -307,7 +269,7 @@ src/DynamicIsland/
 ├─ Core/                       Activity base class, ActivityManager (priorities, alerts), logging
 ├─ Activities/
 │  ├─ Media/                   Windows media session + loopback audio bars
-│  ├─ Claude/                  local hook server + Claude activity/alerts
+│  ├─ Api/                     local server + Island API (pop-ups and progress from scripts)
 │  ├─ Notifications/           Windows notification listener (Discord)
 │  ├─ Focus/ Stopwatches/      Pomodoro focus timer and stopwatch
 │  └─ Timer/                   timer activity + picker (Timer / Focus / Stopwatch)
@@ -321,8 +283,6 @@ installer/                      WiX installer (.msi): per-user, Start Menu, Inst
 tests/DynamicIsland.Tests/      xUnit tests
 .github/workflows/build.yml     tests and builds on every push
 tools/
-├─ claude-hook.ps1             called by Claude Code hooks, forwards events to the island
-├─ install-claude-hooks.ps1    adds/removes the hooks in ~/.claude/settings.json
 ├─ island.ps1                  shows pop-ups and progress through the Island API
 ├─ publish-release.ps1         builds the app and installer and publishes a GitHub release
 ├─ winget-manifest.ps1         writes the winget manifests for a release

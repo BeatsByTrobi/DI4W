@@ -10,7 +10,7 @@ public sealed class ActivityManager
     /// <summary>When each waiting alert joined the line; one that waited too long is out of date (see PresentNext).</summary>
     private readonly Dictionary<IslandAlert, DateTime> _queuedAt = new();
 
-    /// <summary>How long an alert may wait behind others (e.g. behind "Claude needs you" while you're away).</summary>
+    /// <summary>How long an alert may wait behind others (e.g. behind a sticky alert while you're away).</summary>
     public static readonly TimeSpan MaxWait = TimeSpan.FromSeconds(30);
 
     /// <summary>The time, replaceable in tests.</summary>

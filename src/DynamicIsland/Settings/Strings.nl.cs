@@ -48,12 +48,6 @@ public static partial class L
         ["Focus · {0} of {1}"] = "Focus · {0} van {1}",
 
         // ───────────── island: Claude, music, calls ─────────────
-        ["Claude is working"] = "Claude is bezig",
-        ["Claude is working · {0} sessions"] = "Claude is bezig · {0} sessies",
-        ["{0} working"] = "{0} bezig",
-        ["Claude is done"] = "Claude is klaar",
-        ["Claude needs you · {0}"] = "Claude heeft je nodig · {0}",
-        ["Claude needs your input"] = "Claude heeft je input nodig",
         ["Now Playing"] = "Speelt nu",
         ["Open Spotify"] = "Spotify openen",
         ["Previous"] = "Vorige",
@@ -152,7 +146,6 @@ public static partial class L
         ["Dynamic Island Settings"] = "Instellingen Dynamic Island",
         ["General"] = "Algemeen",
         ["Music"] = "Muziek",
-        ["Claude Code"] = "Claude Code",
         ["Notifications"] = "Meldingen",
         ["Add-ons"] = "Add-ons",
         ["About"] = "Over",
@@ -208,23 +201,9 @@ public static partial class L
         ["Hide after pausing"] = "Verbergen na pauzeren",
         ["Seconds the music stays in the island after you pause."] = "Aantal seconden dat de muziek in het eiland blijft nadat je pauzeert.",
 
-        ["Show Claude Code activity"] = "Claude Code-activiteit tonen",
-        ["See when Claude is working, done, or needs you. The island restarts to apply this."] = "Zie wanneer Claude bezig of klaar is, of je nodig heeft. Het eiland start opnieuw om dit toe te passen.",
         ["Port"] = "Poort",
-        ["Local port the hooks send events to. If you change it, also set DYNAMIC_ISLAND_PORT for the hook script."] = "Lokale poort waar de hooks naartoe sturen. Als je die wijzigt, stel dan ook DYNAMIC_ISLAND_PORT in voor het hookscript.",
-        ["Hooks"] = "Hooks",
-        ["Claude Code hooks"] = "Claude Code-hooks",
-        ["Adds four hooks to ~/.claude/settings.json so Claude Code tells the island what it's doing. Your other settings are kept and a backup is made. Applies to new Claude Code sessions."] =
-            "Voegt vier hooks toe aan ~/.claude/settings.json zodat Claude Code het eiland vertelt wat het doet. Je andere instellingen blijven behouden en er wordt een back-up gemaakt. Geldt voor nieuwe Claude Code-sessies.",
-        ["Install"] = "Installeren",
         ["Clear"] = "Wissen",
         ["Remove"] = "Verwijderen",
-        ["Hooks installed"] = "Hooks geïnstalleerd",
-        ["Hooks removed"] = "Hooks verwijderd",
-        ["Claude Code no longer reports to the island."] = "Claude Code meldt niets meer aan het eiland.",
-        ["Start a new Claude Code session to see it in the island."] = "Start een nieuwe Claude Code-sessie om het in het eiland te zien.",
-        ["Something went wrong"] = "Er ging iets mis",
-        ["The hook scripts (tools\\install-claude-hooks.ps1) weren't found next to the island."] = "De hookscripts (tools\\install-claude-hooks.ps1) zijn niet gevonden naast het eiland.",
 
         ["Windows is blocking notification access"] = "Windows blokkeert toegang tot meldingen",
         ["The island can't see new messages until you allow it under Privacy & security → Notifications."] = "Het eiland ziet geen nieuwe berichten totdat je het toestaat onder Privacy en beveiliging → Meldingen.",
@@ -408,8 +387,8 @@ public static partial class L
         ["Get started"] = "Aan de slag",
         ["Back"] = "Terug",
         ["Skip"] = "Overslaan",
-        ["The island at the top of your screen shows what's going on, like on an iPhone: music, timers, Claude Code, messages from your chat apps and more."] =
-            "Het eiland boven aan je scherm laat zien wat er gebeurt, net als op een iPhone: muziek, timers, Claude Code, berichten uit je chat-apps en meer.",
+        ["The island at the top of your screen shows what's going on, like on an iPhone: music, timers, downloads, messages from your chat apps and more."] =
+            "Het eiland boven aan je scherm laat zien wat er gebeurt, net als op een iPhone: muziek, timers, downloads, berichten uit je chat-apps en meer.",
         ["Point at it to see more, and click it to open it."] = "Wijs het aan om meer te zien en klik erop om het te openen.",
         ["Click the empty island to start a timer, focus session or stopwatch."] = "Klik op het lege eiland om een timer, focussessie of stopwatch te starten.",
         ["Right-click it for the menu. The tray icon has the same menu."] = "Klik met rechts voor het menu. Het pictogram in het systeemvak heeft hetzelfde menu.",

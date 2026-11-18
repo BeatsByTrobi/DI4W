@@ -74,6 +74,19 @@ public sealed class SettingsTests : IDisposable
     }
 
     [Fact]
+    public void Port_from_1x_moves_to_the_Island_API()
+    {
+        Directory.CreateDirectory(_folder);
+        File.WriteAllText(AppSettings.FilePath, """{ "ClaudeEnabled": true, "ClaudePort": 50000 }""");
+
+        var settings = AppSettings.Load();
+
+        Assert.Equal(50000, settings.Addons.IslandApiPort);
+        settings.Save();
+        Assert.DoesNotContain("ClaudePort", File.ReadAllText(AppSettings.FilePath));
+    }
+
+    [Fact]
     public void CopyFrom_copies_every_setting()
     {
         var source = new AppSettings { Scale = 1.4, HideHotkey = "Ctrl+Shift+H" };

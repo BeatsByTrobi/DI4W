@@ -100,7 +100,7 @@ LicenseUrl: https://github.com/$repo/blob/main/LICENSE
 ShortDescription: The iPhone Dynamic Island for the Windows desktop.
 Description: |-
   A small black pill at the top of your screen that shows what's going on: music with live audio bars,
-  Claude Code activity, timers, focus sessions, downloads, calendar reminders, chat messages and calls,
+  timers, focus sessions, downloads, calendar reminders, chat messages and calls,
   battery, Bluetooth devices, weather and more. Each add-on can be switched on or off in the settings app.
 Moniker: dynamic-island
 Tags:
@@ -122,7 +122,7 @@ PackageLocale: nl-NL
 ShortDescription: Het Dynamic Island van de iPhone, voor het Windows-bureaublad.
 Description: |-
   Een klein zwart eiland bovenaan je scherm dat laat zien wat er gebeurt: muziek met live geluidsbalkjes,
-  Claude Code-activiteit, timers, focussessies, downloads, agendaherinneringen, chatberichten en oproepen,
+  timers, focussessies, downloads, agendaherinneringen, chatberichten en oproepen,
   batterij, Bluetooth-apparaten, het weer en meer. Elke add-on zet je aan of uit in de instellingen-app.
 ManifestType: locale
 ManifestVersion: $manifestVersion
@@ -136,7 +136,7 @@ PackageLocale: de-DE
 ShortDescription: Die Dynamic Island des iPhone für den Windows-Desktop.
 Description: |-
   Eine kleine schwarze Insel oben auf dem Bildschirm, die zeigt, was gerade passiert: Musik mit Live-Pegelbalken,
-  Claude-Code-Aktivität, Timer, Fokus-Sitzungen, Downloads, Terminerinnerungen, Chatnachrichten und Anrufe,
+  Timer, Fokus-Sitzungen, Downloads, Terminerinnerungen, Chatnachrichten und Anrufe,
   Akku, Bluetooth-Geräte, das Wetter und mehr. Jedes Add-on lässt sich in der Einstellungen-App ein- und ausschalten.
 ManifestType: locale
 ManifestVersion: $manifestVersion
@@ -150,7 +150,7 @@ PackageLocale: fr-FR
 ShortDescription: La Dynamic Island de l'iPhone, sur le bureau Windows.
 Description: |-
   Une petite pilule noire en haut de l'écran qui montre ce qui se passe : la musique avec des barres audio en direct,
-  l'activité de Claude Code, les minuteurs, les sessions de concentration, les téléchargements, les rappels d'agenda,
+  les minuteurs, les sessions de concentration, les téléchargements, les rappels d'agenda,
   les messages et appels, la batterie, les appareils Bluetooth, la météo et plus encore. Chaque module s'active ou se
   désactive dans l'application Paramètres.
 ManifestType: locale

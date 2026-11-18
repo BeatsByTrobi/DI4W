@@ -50,7 +50,7 @@ public abstract class Activity
     protected void RaiseChanged() => Changed?.Invoke();
 }
 
-/// <summary>A transient pop-out (notification, "Claude is done", timer finished).</summary>
+/// <summary>A transient pop-out (notification, download complete, timer finished).</summary>
 public sealed class IslandAlert
 {
     public required FrameworkElement Content { get; init; }

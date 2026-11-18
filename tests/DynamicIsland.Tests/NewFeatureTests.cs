@@ -116,14 +116,14 @@ public class NewFeatureTests
             new() { Content = new TextBlock { Text = title }, StickyUntilHover = sticky };
 
         // A sticky alert holds the line; normally the rest waits behind it.
-        manager.ShowAlert(Alert("Claude needs you", sticky: true));
+        manager.ShowAlert(Alert("Needs you", sticky: true));
         manager.ShowAlert(Alert("Waiting 1"));
         manager.Suppressed = true; // hidden
         manager.ShowAlert(Alert("While hidden"));
         manager.Suppressed = false; // shown again
 
         Assert.Null(manager.CurrentAlert); // nothing old pops up
-        Assert.Equal(new[] { "While hidden", "Waiting 1", "Claude needs you" }, manager.History.Select(h => h.Title));
+        Assert.Equal(new[] { "While hidden", "Waiting 1", "Needs you" }, manager.History.Select(h => h.Title));
         Assert.True(manager.History.Take(2).All(h => h.Missed));
     });
 
@@ -135,7 +135,7 @@ public class NewFeatureTests
         IslandAlert Alert(string title, bool sticky = false) =>
             new() { Content = new TextBlock { Text = title }, StickyUntilHover = sticky };
 
-        var needsYou = Alert("Claude needs you", sticky: true);
+        var needsYou = Alert("Needs you", sticky: true);
         manager.ShowAlert(needsYou);
         manager.ShowAlert(Alert("Old message"));
         now = now.AddMinutes(10); // you were away

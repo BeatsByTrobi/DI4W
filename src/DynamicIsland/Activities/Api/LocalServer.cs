@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using DynamicIsland.Core;
 
-namespace DynamicIsland.Activities.Claude;
+namespace DynamicIsland.Activities.Api;
 
 /// <summary>A request the server hands to its handlers; the JSON body is "{}" when empty or invalid.</summary>
 public sealed record LocalRequest(string Method, string Path, JsonElement Body);
@@ -26,12 +26,12 @@ public sealed record LocalResponse(int Status, string Json)
 }
 
 /// <summary>
-/// Tiny HTTP endpoint on 127.0.0.1 for Claude Code hooks and the Island API.
+/// Tiny HTTP endpoint on 127.0.0.1 for the Island API.
 /// Hand-rolled on a TcpListener so it never needs admin rights or URL ACLs (unlike HttpListener).
 /// Requests from web pages are refused (they carry an Origin header, or a foreign Host after DNS rebinding),
-/// so only programs on this PC, such as hook scripts and curl, can talk to it.
+/// so only programs on this PC, such as scripts and curl, can talk to it.
 /// </summary>
-public sealed class ClaudeHookServer : IDisposable
+public sealed class LocalServer : IDisposable
 {
     private readonly int _port;
     private readonly Func<LocalRequest, LocalResponse?> _handler;
@@ -39,7 +39,7 @@ public sealed class ClaudeHookServer : IDisposable
     private TcpListener? _listener;
 
     /// <param name="handler">Answers a request, or returns null for "not found". Called on a background thread.</param>
-    public ClaudeHookServer(int port, Func<LocalRequest, LocalResponse?> handler)
+    public LocalServer(int port, Func<LocalRequest, LocalResponse?> handler)
     {
         _port = port;
         _handler = handler;

@@ -81,7 +81,7 @@ public sealed partial class AboutPage : Page
         {
             var json = await File.ReadAllTextAsync(file.Path);
             // Any JSON would read as "all defaults"; ours always has the add-ons section.
-            imported = json.Contains("\"Addons\"") ? System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) : null;
+            imported = json.Contains("\"Addons\"") ? AppSettings.Parse(json) : null;
         }
         catch (Exception ex)
         {

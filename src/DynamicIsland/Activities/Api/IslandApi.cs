@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using DynamicIsland.Activities.Claude;
 using DynamicIsland.Addons;
 using DynamicIsland.Core;
 using DynamicIsland.UI;
@@ -16,7 +15,7 @@ namespace DynamicIsland.Activities.Api;
 ///   POST /alert     {"title":"Backup done","message":"312 files","icon":"success","color":"green","seconds":5,"url":"https://…"}
 ///   POST /progress  {"id":"backup","title":"Backing up","value":0.4,"detail":"120 of 312 files"}
 ///   POST /progress  {"id":"backup","done":true,"message":"Backup done"}
-/// Requests from web pages are refused by the server; see ClaudeHookServer.
+/// Requests from web pages are refused by the server; see LocalServer.
 /// </summary>
 public sealed class IslandApi
 {

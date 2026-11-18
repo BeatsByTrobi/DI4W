@@ -48,12 +48,6 @@ public static partial class L
         ["Focus · {0} of {1}"] = "Fokus · {0} von {1}",
 
         // ───────────── island: Claude, music, calls ─────────────
-        ["Claude is working"] = "Claude arbeitet",
-        ["Claude is working · {0} sessions"] = "Claude arbeitet · {0} Sitzungen",
-        ["{0} working"] = "{0} arbeitet",
-        ["Claude is done"] = "Claude ist fertig",
-        ["Claude needs you · {0}"] = "Claude braucht dich · {0}",
-        ["Claude needs your input"] = "Claude braucht deine Eingabe",
         ["Now Playing"] = "Läuft gerade",
         ["Open Spotify"] = "Spotify öffnen",
         ["Previous"] = "Zurück",
@@ -152,7 +146,6 @@ public static partial class L
         ["Dynamic Island Settings"] = "Dynamic Island – Einstellungen",
         ["General"] = "Allgemein",
         ["Music"] = "Musik",
-        ["Claude Code"] = "Claude Code",
         ["Notifications"] = "Benachrichtigungen",
         ["Add-ons"] = "Add-ons",
         ["About"] = "Info",
@@ -210,23 +203,9 @@ public static partial class L
         ["Hide after pausing"] = "Nach dem Pausieren ausblenden",
         ["Seconds the music stays in the island after you pause."] = "Sekunden, die die Musik nach dem Pausieren in der Insel bleibt.",
 
-        ["Show Claude Code activity"] = "Claude-Code-Aktivität anzeigen",
-        ["See when Claude is working, done, or needs you. The island restarts to apply this."] = "Sieh, wann Claude arbeitet, fertig ist oder dich braucht. Die Insel startet dafür neu.",
         ["Port"] = "Port",
-        ["Local port the hooks send events to. If you change it, also set DYNAMIC_ISLAND_PORT for the hook script."] = "Lokaler Port, an den die Hooks Ereignisse senden. Wenn du ihn änderst, setze auch DYNAMIC_ISLAND_PORT für das Hook-Skript.",
-        ["Hooks"] = "Hooks",
-        ["Claude Code hooks"] = "Claude-Code-Hooks",
-        ["Adds four hooks to ~/.claude/settings.json so Claude Code tells the island what it's doing. Your other settings are kept and a backup is made. Applies to new Claude Code sessions."] =
-            "Fügt vier Hooks zu ~/.claude/settings.json hinzu, damit Claude Code der Insel sagt, was es tut. Deine anderen Einstellungen bleiben erhalten und es wird eine Sicherung angelegt. Gilt für neue Claude-Code-Sitzungen.",
-        ["Install"] = "Installieren",
         ["Clear"] = "Löschen",
         ["Remove"] = "Entfernen",
-        ["Hooks installed"] = "Hooks installiert",
-        ["Hooks removed"] = "Hooks entfernt",
-        ["Claude Code no longer reports to the island."] = "Claude Code meldet nichts mehr an die Insel.",
-        ["Start a new Claude Code session to see it in the island."] = "Starte eine neue Claude-Code-Sitzung, um sie in der Insel zu sehen.",
-        ["Something went wrong"] = "Etwas ist schiefgelaufen",
-        ["The hook scripts (tools\\install-claude-hooks.ps1) weren't found next to the island."] = "Die Hook-Skripte (tools\\install-claude-hooks.ps1) wurden neben der Insel nicht gefunden.",
 
         ["Windows is blocking notification access"] = "Windows blockiert den Zugriff auf Benachrichtigungen",
         ["The island can't see new messages until you allow it under Privacy & security → Notifications."] = "Die Insel sieht keine neuen Nachrichten, bis du es unter Datenschutz und Sicherheit → Benachrichtigungen erlaubst.",
@@ -410,8 +389,8 @@ public static partial class L
         ["Get started"] = "Los geht's",
         ["Back"] = "Zurück",
         ["Skip"] = "Überspringen",
-        ["The island at the top of your screen shows what's going on, like on an iPhone: music, timers, Claude Code, messages from your chat apps and more."] =
-            "Die Insel oben auf dem Bildschirm zeigt, was gerade passiert, wie beim iPhone: Musik, Timer, Claude Code, Nachrichten aus deinen Chat-Apps und mehr.",
+        ["The island at the top of your screen shows what's going on, like on an iPhone: music, timers, downloads, messages from your chat apps and more."] =
+            "Die Insel oben auf dem Bildschirm zeigt, was gerade passiert, wie beim iPhone: Musik, Timer, Downloads, Nachrichten aus deinen Chat-Apps und mehr.",
         ["Point at it to see more, and click it to open it."] = "Zeige darauf, um mehr zu sehen, und klicke, um sie zu öffnen.",
         ["Click the empty island to start a timer, focus session or stopwatch."] = "Klicke auf die leere Insel, um einen Timer, eine Fokus-Sitzung oder die Stoppuhr zu starten.",
         ["Right-click it for the menu. The tray icon has the same menu."] = "Rechtsklick öffnet das Menü. Das Symbol im Infobereich hat dasselbe Menü.",
