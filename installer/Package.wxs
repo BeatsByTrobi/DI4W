@@ -1,11 +1,12 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
-     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
-     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
     Per-user installer: no admin rights, installs to %LocalAppData%\Programs\Dynamic Island.
     The in-app updater recognises this install through the registry value below and updates with the next .msi.
+    Both apps are self-contained Rust programs (tools/build.ps1 lays them out), so nothing else is required;
+    the UpgradeCode is the one 1.x used, so the C# version is upgraded in place.
   -->
   <Package Name="Dynamic Island for Windows"
            Manufacturer="aangeraakt"
@@ -17,15 +18,10 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of Dynamic Island is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
-    <Icon Id="island.ico" SourceFile="..\src\DynamicIsland\Assets\island.ico" />
+    <Icon Id="island.ico" SourceFile="..\crates\settings\assets\island.ico" />
     <Property Id="ARPPRODUCTICON" Value="island.ico" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/aangeraakt/DI4W" />
     <Property Id="ARPHELPLINK" Value="https://github.com/aangeraakt/DI4W/issues" />
-
-    <!-- The app needs the .NET 8 Desktop Runtime; say so up front instead of failing on first start. -->
-    <netfx:DotNetCompatibilityCheck Property="DOTNET8DESKTOP" RuntimeType="desktop" Platform="$(var.Arch)" Version="8.0.0" RollForward="minor" />
-    <Launch Condition="Installed OR DOTNET8DESKTOP = &quot;0&quot;"
-            Message="Dynamic Island needs the .NET 8 Desktop Runtime ($(var.Arch)). Download it from https://dotnet.microsoft.com/download/dotnet/8.0, then run this installer again." />
 
     <!-- Close a running island and settings app before replacing their files: ask nicely (close and
          end-session messages, which both apps handle by quitting cleanly), and end them after 10 s if still open. -->
@@ -39,7 +35,8 @@
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
 
-    <!-- Everything from the published app folder (island, Settings\, tools\). -->
+    <!-- Everything from the published app folder: DynamicIsland.exe, Settings\DynamicIsland.Settings.exe,
+         tools\island.ps1 and LICENSE. Files 1.x left behind (its .NET DLLs) are removed by the major upgrade. -->
     <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
       <Files Include="$(var.AppDir)\**" />
     </ComponentGroup>
