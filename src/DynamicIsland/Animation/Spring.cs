@@ -21,6 +21,17 @@ public sealed class Spring
         Damping = damping;
     }
 
+    /// <summary>
+    /// A spring described the way SwiftUI describes them: <paramref name="response"/> is roughly how long one swing
+    /// takes (seconds), <paramref name="dampingFraction"/> 1 means no overshoot, lower values bounce.
+    /// </summary>
+    public static Spring FromResponse(double initial, double response, double dampingFraction)
+    {
+        var stiffness = Math.Pow(2 * Math.PI / response, 2);
+        var damping = 4 * Math.PI * dampingFraction / response;
+        return new Spring(initial, stiffness, damping);
+    }
+
     public bool IsSettled => Math.Abs(Value - Target) < 0.02 && Math.Abs(Velocity) < 0.02;
 
     public void Snap(double value)

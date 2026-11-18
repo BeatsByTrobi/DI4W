@@ -19,34 +19,38 @@
             <ScaleTransform x:Name="RootScale" ScaleX="1" ScaleY="1" />
         </Canvas.LayoutTransform>
 
-        <!-- Soft shadow behind the pill so it reads on dark wallpapers too. -->
-        <Border x:Name="Shadow" Background="Black" IsHitTestVisible="False" Opacity="0.55">
-            <Border.Effect>
+        <!-- Soft shadow under the light island only: the dark one is pure black like Apple's, with a key line. -->
+        <Path x:Name="Shadow" Fill="Black" IsHitTestVisible="False" Opacity="0.35" Visibility="Collapsed">
+            <Path.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.45" Color="Black" />
-            </Border.Effect>
-        </Border>
+            </Path.Effect>
+        </Path>
 
-        <!-- The island itself. -->
+        <!-- The island itself. Its outline (continuous corners) is set as the clip on every frame. -->
         <Border x:Name="Pill" Background="Black" Cursor="Hand">
             <Grid x:Name="PillContent">
-                <!-- Compact: leading (left) and trailing (right) around the "camera". The ends of the pill are
-                     half-circles (radius 17), so keep content a full radius-ish inset from both ends. -->
+                <!-- Compact: leading (left) and trailing (right) around the "camera", snug against the rounded ends
+                     with even margins (Apple's concentric placement). -->
                 <Grid x:Name="CompactLayer" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Top">
-                    <ContentControl x:Name="LeadingHost" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0" />
-                    <ContentControl x:Name="TrailingHost" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0" />
+                    <ContentControl x:Name="LeadingHost" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
+                    <ContentControl x:Name="TrailingHost" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
                 </Grid>
                 <!-- Idle: small status items (Do Not Disturb moon, weather) in the otherwise empty pill. -->
                 <Grid x:Name="IdleLayer" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Top">
-                    <ContentControl x:Name="IdleLeadingHost" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0" />
-                    <ContentControl x:Name="IdleTrailingHost" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0" />
+                    <ContentControl x:Name="IdleLeadingHost" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    <ContentControl x:Name="IdleTrailingHost" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,13,0" />
                 </Grid>
                 <ContentControl x:Name="ExpandedLayer" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Top" />
                 <ContentControl x:Name="AlertLayer" Opacity="0" HorizontalAlignment="Center" VerticalAlignment="Top" />
             </Grid>
         </Border>
 
+        <!-- Apple's key line: a hairline around the island that tells it apart from a dark background, tinted to
+             match what the island shows. -->
+        <Path x:Name="Keyline" IsHitTestVisible="False" StrokeThickness="1" />
+
         <!-- Second activity, shown as the detached circle to the right (iOS "minimal" presentation). -->
-        <Border x:Name="Bubble" Background="Black" Cursor="Hand" Width="34" Height="34" CornerRadius="17"
+        <Border x:Name="Bubble" Background="Black" Cursor="Hand" Width="37" Height="37" CornerRadius="18.5"
                 RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
                 <ScaleTransform x:Name="BubbleScale" ScaleX="0" ScaleY="0" />

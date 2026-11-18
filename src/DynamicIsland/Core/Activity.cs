@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 
 namespace DynamicIsland.Core;
 
@@ -44,8 +45,11 @@ public abstract class Activity
     public abstract FrameworkElement Bubble { get; }
     public abstract FrameworkElement Expanded { get; }
 
-    public virtual double CompactWidth => 300;
-    public virtual Size ExpandedSize => new(420, 160);
+    /// <summary>Tint of the hairline around the island while this activity shows (Apple's key line); null is neutral.</summary>
+    public virtual Color? Keyline => null;
+
+    public virtual double CompactWidth => 230;
+    public virtual Size ExpandedSize => new(371, 160);
 
     protected void RaiseChanged() => Changed?.Invoke();
 }
@@ -54,7 +58,10 @@ public abstract class Activity
 public sealed class IslandAlert
 {
     public required FrameworkElement Content { get; init; }
-    public Size Size { get; init; } = new(400, 76);
+    public Size Size { get; init; } = new(371, 84);
+
+    /// <summary>Tint of the hairline around the island while this alert shows; null is neutral.</summary>
+    public Color? Keyline { get; init; }
     public TimeSpan Duration { get; init; } = TimeSpan.FromSeconds(4.5);
 
     /// <summary>Never auto-dismisses; must be clicked / dismissed in code.</summary>

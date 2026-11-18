@@ -22,22 +22,31 @@ public partial class IslandWindow : Window
 {
     private const double CanvasWidth = 600;
     private const double CanvasHeight = 260;
-    private const double CompactHeight = 34;
-    private const double IdleWidth = 190;
-    private const double BubbleSize = 34;
-    private const double BubbleGap = 8;
+    // Apple's measurements in points (iPhone 15/16 Pro, HIG "Live Activities"): the resting island is 126 × 37.33,
+    // compact activities add about 52 on each side, expanded ones are 371 wide and 84–160 tall.
+    private const double CompactHeight = 37;
+    private const double IdleWidth = 126;
+    private const double IdleWithContentWidth = 172; // room for the weather / Do Not Disturb moon beside the camera
+    private const double BubbleSize = 37;
+    private const double BubbleGap = 7;
+    private const double MaxRadius = 44;
+
+    private static readonly Color NeutralKeyline = Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF);
+    private static readonly Color LightKeyline = Color.FromArgb(0x22, 0x00, 0x00, 0x00);
 
     private enum Mode { Idle, Compact, Expanded, Panel, Alert }
 
     private readonly ActivityManager _manager;
     private readonly AppSettings _settings;
 
-    // Shape springs. Width/height share a slightly bouncy spring; the radius follows a stiffer one.
-    private readonly Spring _width = new(IdleWidth, 300, 24);
-    private readonly Spring _height = new(CompactHeight, 300, 24);
-    private readonly Spring _radius = new(CompactHeight / 2, 380, 30);
-    private readonly Spring _bubble = new(0, 360, 22);
-    private readonly Spring _hover = new(0, 420, 28);
+    // Shape springs, in SwiftUI terms: the size follows a quick spring with a little bounce (Apple's island
+    // overshoots slightly and settles), the radius a stiffer one without bounce so the corners never wobble.
+    private readonly Spring _width = Spring.FromResponse(IdleWidth, 0.42, 0.72);
+    private readonly Spring _height = Spring.FromResponse(CompactHeight, 0.42, 0.72);
+    private readonly Spring _radius = Spring.FromResponse(CompactHeight / 2, 0.34, 1.0);
+    private readonly Spring _bubble = Spring.FromResponse(0, 0.45, 0.62);
+    // Pressing the island squeezes it a little, like a tap on the iPhone; letting go springs it back.
+    private readonly Spring _press = Spring.FromResponse(0, 0.22, 0.6);
     private readonly SpringDriver _driver;
 
     private readonly DispatcherTimer _collapseTimer;
@@ -84,17 +93,18 @@ public partial class IslandWindow : Window
         _settings = settings;
         InitializeComponent();
 
-        _driver = new SpringDriver(ApplyFrame, _width, _height, _radius, _bubble, _hover);
+        _driver = new SpringDriver(ApplyFrame, _width, _height, _radius, _bubble, _press);
 
         Pill.Background = Bubble.Background = Ui.PillBackground;
+        // The light island gets a soft shadow in its own color, so it doesn't melt into white pages; the dark one is
+        // pure black like Apple's, set apart from dark backgrounds only by the key line.
         if (Palette.Light)
         {
-            // A hairline edge and the pill's own color under the shadow, so a light pill doesn't melt into white pages.
-            Shadow.Background = Ui.PillBackground;
-            Shadow.Opacity = 0.35;
-            Pill.BorderBrush = Bubble.BorderBrush = Ui.Brush("#22000000");
-            Pill.BorderThickness = Bubble.BorderThickness = new Thickness(1);
+            Shadow.Fill = Ui.PillBackground;
+            Shadow.Visibility = Visibility.Visible;
         }
+        Bubble.BorderBrush = new SolidColorBrush(Palette.Light ? LightKeyline : NeutralKeyline);
+        Bubble.BorderThickness = new Thickness(1);
 
         ApplyScale();
         ApplyFrame();
@@ -115,7 +125,12 @@ public partial class IslandWindow : Window
 
         Pill.MouseEnter += OnPillEnter;
         Pill.MouseLeave += OnPillLeave;
-        Pill.MouseLeftButtonUp += OnPillClick;
+        Pill.MouseLeftButtonDown += (_, _) => Press(true);
+        Pill.MouseLeftButtonUp += (s, e) =>
+        {
+            Press(false);
+            OnPillClick(s, e);
+        };
         Pill.MouseRightButtonUp += OnPillRightClick;
         Bubble.MouseLeftButtonUp += (_, e) =>
         {
@@ -326,7 +341,7 @@ public partial class IslandWindow : Window
         else
         {
             mode = Mode.Idle;
-            target = new Size(IdleWidth, CompactHeight);
+            target = new Size(HasIdleContent ? IdleWithContentWidth : IdleWidth, CompactHeight);
             key = Mode.Idle;
         }
 
@@ -341,8 +356,13 @@ public partial class IslandWindow : Window
 
         _width.Target = target.Width;
         _height.Target = target.Height;
-        _radius.Target = Math.Min(target.Height / 2, 42);
-        _hover.Target = _hovering && mode is Mode.Idle or Mode.Compact ? 1 : 0;
+        _radius.Target = Math.Min(target.Height / 2, MaxRadius);
+        SetKeyline(mode switch
+        {
+            Mode.Alert => alert!.Keyline,
+            Mode.Compact or Mode.Expanded => primary!.Keyline,
+            _ => null,
+        });
 
         if (mode != _mode || !Equals(key, _shownKey))
         {
@@ -447,26 +467,28 @@ public partial class IslandWindow : Window
 
     private void ApplyFrame()
     {
-        var hover = _hover.Value;
-        var w = Math.Max(20, _width.Value + hover * 10);
-        var h = Math.Max(20, _height.Value + hover * 3);
+        // A press squeezes the island by a few points, around its centre.
+        var press = _press.Value;
+        var w = Math.Max(20, _width.Value - press * Math.Min(10, _width.Value * 0.04));
+        var h = Math.Max(20, _height.Value - press * 2.5);
         var r = Math.Clamp(_radius.Value, 0, Math.Min(w, h) / 2);
         var left = (CanvasWidth - w) / 2;
-        var top = _settings.TopOffset;
+        var top = _settings.TopOffset + (_height.Value - h) / 2;
 
         // When the bubble is visible, shift the pill left so pill + bubble stay centered as a group.
         var bubbleShift = Math.Max(0, _bubble.Value) * (BubbleSize + BubbleGap) / 2;
         left -= bubbleShift;
 
-        foreach (var b in new[] { Pill, Shadow })
+        var outline = IslandShape.Rounded(w, h, r);
+        Pill.Width = w;
+        Pill.Height = h;
+        Pill.Clip = outline;
+        Shadow.Data = Keyline.Data = outline;
+        foreach (var e in new FrameworkElement[] { Pill, Shadow, Keyline })
         {
-            b.Width = w;
-            b.Height = h;
-            b.CornerRadius = new CornerRadius(r);
-            Canvas.SetLeft(b, left);
-            Canvas.SetTop(b, top);
+            Canvas.SetLeft(e, left);
+            Canvas.SetTop(e, top);
         }
-        Pill.Clip = new RectangleGeometry(new Rect(0, 0, w, h), r, r);
 
         Canvas.SetLeft(Bubble, left + w + BubbleGap);
         Canvas.SetTop(Bubble, top + (h - BubbleSize) / 2);
@@ -477,6 +499,29 @@ public partial class IslandWindow : Window
         // Privacy dots sit after the pill (and the bubble while it's out), level with the compact row.
         Canvas.SetLeft(Indicators, left + w + BubbleGap + bs * (BubbleSize + BubbleGap));
         Canvas.SetTop(Indicators, top + (CompactHeight - Indicators.ActualHeight) / 2);
+    }
+
+    // ───────────────────────────── key line and press ─────────────────────────────
+
+    private Color? _keyline = Colors.Transparent; // differs from every real value, so the first call paints
+
+    /// <summary>Apple's key line: neutral, or a translucent version of the activity's color. Light island: a grey hairline.</summary>
+    private void SetKeyline(Color? tint)
+    {
+        if (tint == _keyline) return;
+        _keyline = tint;
+        var color = Palette.Light ? LightKeyline
+            : tint is { } c ? Color.FromArgb(0x5C, c.R, c.G, c.B)
+            : NeutralKeyline;
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        Keyline.Stroke = brush;
+    }
+
+    private void Press(bool down)
+    {
+        _press.Target = down ? 1 : 0;
+        _driver.Kick();
     }
 
     // ───────────────────────────── input ─────────────────────────────
@@ -493,6 +538,7 @@ public partial class IslandWindow : Window
     private void OnPillLeave(object sender, MouseEventArgs e)
     {
         _hovering = false;
+        Press(false);
         _manager.HoldAlert = false;
         if (_expanded || _panel is not null) _collapseTimer.Start();
         Refresh();
