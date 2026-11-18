@@ -11,13 +11,15 @@ A small black pill sits at the top-center of your screen. It changes shape to sh
 <p align="center">
   <img src="docs/picker.png" alt="Timer picker with Timer, Focus and Stopwatch" height="150">
   &nbsp;
-  <img src="docs/focus.png" alt="Focus timer, expanded" height="110">
+  <img src="docs/focus.png" alt="Focus timer, expanded" height="93">
 </p>
 <p align="center">
-  <img src="docs/download.png" alt="Download complete alert" height="76">
+  <img src="docs/download.png" alt="Download complete alert" height="80">
 </p>
 <p align="center">
-  <img src="docs/weather.png" alt="Weather in the empty island" height="40">
+  <img src="docs/charging.png" alt="The charging indicator: Charging, 82% and a green battery" height="42">
+  &nbsp;
+  <img src="docs/split.png" alt="A focus session attached to the island and a progress ring in the detached bubble" height="42">
 </p>
 
 ## Features
@@ -25,10 +27,10 @@ A small black pill sits at the top-center of your screen. It changes shape to sh
 | | In the pill | Click to expand |
 |---|---|---|
 | 🎵 **Spotify** | Album art and live audio bars, tinted to match the album art | Art, title and artist, a seekable progress bar, ⏮ ⏯ ⏭ |
-| ⏱️ **Timer** | Orange timer icon and countdown | Pause/resume, cancel and a large countdown |
+| ⏱️ **Timer** | Orange timer icon and countdown; next to something else, the time left in an orange oval | Pause/resume, cancel and a large countdown |
 | 🍅 **Focus timer** | Red progress ring and countdown; work and break periods run back to back | Pause, skip to the next period, stop |
 | ⏲️ **Stopwatch** | Counts up | Pause/resume, stop, tenths of a second |
-| 💬 **Chat apps** | Discord, WhatsApp, Telegram, Teams, Slack, Signal and Outlook messages pop out; calls show as a call card | Click to jump to the app |
+| 💬 **Chat apps** | Discord, WhatsApp, Telegram, Teams, Slack, Signal and Outlook messages pop out; calls show as an iPhone-style call card with the caller's initials | Click to jump to the app |
 
 ### Add-ons
 
@@ -37,8 +39,8 @@ Each one has its own switch under **Settings → Add-ons** (calls and chat apps 
 | | What it shows |
 |---|---|
 | 🔊 **Volume** / ☀️ **Brightness** | An iOS-style bar when you change them (brightness: built-in laptop screens) |
-| 🔋 **Battery** | Charger plugged in or unplugged, and warnings at 20% and 10% (adjustable) |
-| 🎧 **Bluetooth** | "AirPods · Connected · 80% battery" when a paired device connects or disconnects |
+| 🔋 **Battery** | "Charging 82%" with a green battery when you plug in, and warnings at 20% and 10% (adjustable) |
+| 🎧 **Bluetooth** | "AirPods · Connected" with the battery as a ring, like AirPods on an iPhone |
 | 💾 **USB drives** | A drive plugged in or removed, with its name and size; click to open it |
 | 📶 **Wi-Fi and internet** | No internet, back online, or which network you joined |
 | 🟠 **Microphone and camera** | An orange or green dot next to the island while an app uses them |
@@ -56,8 +58,10 @@ Each one has its own switch under **Settings → Add-ons** (calls and chat apps 
 
 It also includes:
 
-- **iOS-style animation.** The pill springs between sizes with a small bounce, and content fades in with a blur.
-- **Two at once.** When two things are active, the second shows as a small circle next to the pill, as on the iPhone. Click it to swap them.
+- **Built to Apple's measurements.** The sizes from Apple's design guidelines (a 126 × 37 resting island, 371-wide expanded views), continuous "squircle" corners, a pure black island with Apple's tinted key line, and content placed at even, concentric margins.
+- **iOS-style animation.** The island springs between sizes with a small bounce, squeezes a little when you press it, and content fades in with a blur.
+- **Two at once.** As on the iPhone, the first activity shows attached to the island and the second in a detached bubble that buds off like a drop. Click the bubble to swap them.
+- **System indicators.** Volume, brightness, Caps Lock, charging and Do Not Disturb widen the island to one line, like Silent mode and Focus on the iPhone.
 - **Alerts.** "Timer done", "Download complete", messages and add-on pop-ups open and close again by themselves. They stay open while your mouse is over them.
 - **Stays out of the way.** It never takes keyboard focus, you can click through everything around the pill, and it hides while a fullscreen game or video is playing.
 - **Lightweight.** Native C# and WPF, with a separate WinUI 3 settings app. Spotify works without a Spotify account or API key. With Windows' battery saver on, it redraws less often and skips blur and shadow effects.
