@@ -195,8 +195,8 @@
   .island-host { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 3; }
   .island {
     position: relative; background: #000; color: #fff; overflow: hidden; text-align: left;
-    width: 190px; height: 34px; border-radius: 17px;
-    box-shadow: 0 6px 24px rgba(0,0,0,.45);
+    width: 172px; height: 37px; border-radius: 18.5px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.14); /* Apple's key line */
     transition: width .7s var(--spring), height .7s var(--spring), border-radius .7s var(--spring);
   }
   .island .layer {
@@ -1065,11 +1065,11 @@
   const layers = [...island.querySelectorAll('.layer')];
   const buttons = [...document.querySelectorAll('#state-dots button')];
   const states = {
-    idle:    { w: 190, h: 34, r: 17, label: 'The empty island with the weather' },
-    music:   { w: 280, h: 34, r: 17, label: 'The island showing music' },
-    timer:   { w: 250, h: 34, r: 17, label: 'A timer counting down' },
-    message: { w: 400, h: 76, r: 34, label: 'A message from Discord' },
-    done:    { w: 400, h: 76, r: 34, label: 'Download complete' },
+    idle:    { w: 172, h: 37, r: 18.5, label: 'The empty island with the weather' },
+    music:   { w: 230, h: 37, r: 18.5, label: 'The island showing music' },
+    timer:   { w: 230, h: 37, r: 18.5, label: 'A timer counting down' },
+    message: { w: 371, h: 84, r: 42, label: 'A message from Discord' },
+    done:    { w: 371, h: 84, r: 42, label: 'Download complete' },
   };
   const order = ['music', 'timer', 'message', 'done'];
   let current = 'idle', index = 0, timer;
