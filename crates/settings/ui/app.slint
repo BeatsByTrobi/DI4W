@@ -1,0 +1,199 @@
+// The settings window: a custom title bar with the traffic lights, the navigation pane and the pages.
+
+import { Palette } from "std-widgets.slint";
+import { L, Theme } from "theme.slint";
+import { Glyph, TrafficLights, Severity } from "controls.slint";
+import { App, Dialog, General, Media, Notifications, Addons, About, Welcome, Report, OrderItem, ChatAppRow, AddonEntry, AddonItem, ItemKind, Pick } from "state.slint";
+import { GeneralPage } from "pages/general.slint";
+import { MediaPage } from "pages/media.slint";
+import { NotificationsPage } from "pages/notifications.slint";
+import { AddonsPage } from "pages/addons.slint";
+import { AboutPage } from "pages/about.slint";
+import { WelcomeDialog, ReportDialog } from "dialogs.slint";
+
+export { L, Theme, App, Dialog, General, Media, Notifications, Addons, About, Welcome, Report, OrderItem, ChatAppRow, AddonEntry, AddonItem, ItemKind, Pick, Severity }
+
+// NavigationViewItem: icon, label, the accent pill when selected.
+component NavItem inherits Rectangle {
+    in property <string> glyph;
+    in property <string> text;
+    in property <bool> selected;
+    in property <bool> compact;
+    callback clicked;
+    height: 36px;
+    border-radius: 4px;
+    background: touch.pressed ? Theme.subtle-pressed : (root.selected || touch.has-hover) ? Theme.subtle-hover : transparent;
+    accessible-role: tab;
+    accessible-label: root.text;
+    accessible-item-selected: root.selected;
+    accessible-action-default => { root.clicked(); }
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+    Rectangle {
+        x: 0;
+        width: 3px;
+        height: root.selected ? 16px : 0px;
+        animate height { duration: 150ms; easing: ease-out; }
+        border-radius: 1.5px;
+        background: Theme.accent;
+    }
+    Glyph {
+        x: 12px;
+        width: 16px;
+        text: root.glyph;
+    }
+    if !root.compact: Text {
+        x: 44px;
+        width: parent.width - 48px;
+        text: root.text;
+        overflow: elide;
+        vertical-alignment: center;
+        font-size: Theme.body;
+        color: Theme.text-primary;
+    }
+    if root.compact: Tooltip {
+        text: @markdown("\{root.text}");
+    }
+}
+
+export component MainWindow inherits Window {
+    // Not translated: the single-instance check finds the window by this title.
+    title: "Dynamic Island Settings";
+    icon: App.icon;
+    preferred-width: 1000px;
+    preferred-height: 720px;
+    min-width: 560px;
+    min-height: 480px;
+    background: Theme.window-background;
+    default-font-family: "Segoe UI Variable Text";
+    default-font-size: 14px;
+
+    // Called from Rust once Theme.dark is set: the std widgets follow it too.
+    public function apply-theme() {
+        Palette.color-scheme = Theme.dark ? ColorScheme.dark : ColorScheme.light;
+    }
+
+    VerticalLayout {
+        // Title bar on the Mica background, with macOS-style window buttons instead of Windows' own.
+        title-bar := Rectangle {
+            height: 48px;
+            HorizontalLayout {
+                padding-left: 18px;
+                spacing: 12px;
+                alignment: start;
+                VerticalLayout {
+                    alignment: center;
+                    padding-right: 10px;
+                    lights := TrafficLights {
+                        active: App.window-active;
+                        close => { App.close-window(); }
+                        minimize => { App.minimize-window(); }
+                        zoom => { App.zoom-window(); }
+                    }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    Image {
+                        source: App.icon;
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+                Text {
+                    text: L.t("Dynamic Island Settings");
+                    vertical-alignment: center;
+                    font-size: Theme.caption;
+                    color: App.window-active ? Theme.text-primary : Theme.text-tertiary;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            // NavigationView pane (Left, 260 wide open, 48 compact).
+            pane := VerticalLayout {
+                width: App.pane-open ? 260px : 48px;
+                animate width { duration: 200ms; easing: ease-out; }
+                padding-left: 4px;
+                padding-right: 4px;
+                padding-bottom: 4px;
+                spacing: 4px;
+                Rectangle {
+                    width: 40px;
+                    height: 36px;
+                    border-radius: 4px;
+                    background: toggle-touch.pressed ? Theme.subtle-pressed : toggle-touch.has-hover ? Theme.subtle-hover : transparent;
+                    accessible-role: button;
+                    accessible-label: App.pane-open ? L.t("Close Navigation") : L.t("Open Navigation");
+                    accessible-action-default => { App.pane-open = !App.pane-open; }
+                    toggle-touch := TouchArea {
+                        clicked => { App.pane-open = !App.pane-open; }
+                    }
+                    Glyph {
+                        text: "\u{E700}";
+                    }
+                }
+                Rectangle { height: 4px; }
+                NavItem {
+                    glyph: "\u{E713}";
+                    text: L.t("General");
+                    selected: App.page == 0;
+                    compact: !App.pane-open;
+                    clicked => { App.navigate(0); }
+                }
+                NavItem {
+                    glyph: "\u{E8D6}";
+                    text: L.t("Music");
+                    selected: App.page == 1;
+                    compact: !App.pane-open;
+                    clicked => { App.navigate(1); }
+                }
+                NavItem {
+                    glyph: "\u{EA8F}";
+                    text: L.t("Notifications");
+                    selected: App.page == 2;
+                    compact: !App.pane-open;
+                    clicked => { App.navigate(2); }
+                }
+                NavItem {
+                    glyph: "\u{EA86}";
+                    text: L.t("Add-ons");
+                    selected: App.page == 3;
+                    compact: !App.pane-open;
+                    clicked => { App.navigate(3); }
+                }
+                Rectangle { vertical-stretch: 1; }
+                NavItem {
+                    glyph: "\u{E946}";
+                    text: L.t("About");
+                    selected: App.page == 4;
+                    compact: !App.pane-open;
+                    clicked => { App.navigate(4); }
+                }
+            }
+
+            // The content layer, with its rounded top-left corner and a hairline on the top and left edges.
+            Rectangle {
+                clip: true;
+                Rectangle {
+                    x: 0;
+                    y: 0;
+                    width: parent.width + 9px;
+                    height: parent.height + 9px;
+                    border-top-left-radius: 8px;
+                    border-width: 1px;
+                    border-color: Theme.layer-stroke;
+                    background: Theme.layer;
+                }
+                if App.page == 0: GeneralPage { }
+                if App.page == 1: MediaPage { }
+                if App.page == 2: NotificationsPage { }
+                if App.page == 3: AddonsPage { }
+                if App.page == 4: AboutPage { }
+            }
+        }
+    }
+
+    if App.dialog == Dialog.welcome: WelcomeDialog { }
+    if App.dialog == Dialog.report: ReportDialog { }
+}

@@ -1,0 +1,71 @@
+// Colors and type of the Windows 11 (WinUI 3) look, in dark and light, and the translation hook.
+
+import { Palette } from "std-widgets.slint";
+
+// Every visible text goes through here: L.t("English") is looked up in crates/core/strings/<lang>.json.
+export global L {
+    pure callback t(string) -> string;
+    // "{0}" placeholders filled with the given values.
+    pure callback f(string, [string]) -> string;
+}
+
+export global Theme {
+    // Follows Windows' app mode ("Choose your default app mode"); set from Rust at startup.
+    in-out property <bool> dark;
+    // "Segoe Fluent Icons" on Windows 11, "Segoe MDL2 Assets" on Windows 10.
+    in property <string> icon-font: "Segoe Fluent Icons";
+    in property <string> mono-font: "Cascadia Mono";
+    // True while Mica shows behind the window (then the background is see-through).
+    in property <bool> mica;
+
+    // Window background: Mica's fallback colors (SolidBackgroundFillColorBase).
+    out property <color> window-background: mica ? transparent : (dark ? #202020 : #f3f3f3);
+    // The navigation view's content layer (LayerFillColorDefault) and its edge.
+    out property <color> layer: dark ? #3a3a3a4c : #ffffff80;
+    out property <color> layer-stroke: dark ? #0000001a : #0000000f;
+
+    out property <color> text-primary: dark ? #ffffff : #000000e4;
+    out property <color> text-secondary: dark ? #ffffffc5 : #0000009e;
+    out property <color> text-tertiary: dark ? #ffffff87 : #00000072;
+    out property <color> text-disabled: dark ? #ffffff5d : #0000005c;
+    out property <color> caution: dark ? #fce100 : #9d5d00;
+    out property <brush> accent: Palette.accent-background;
+    out property <color> accent-text: dark ? #99ebff : #003e92;
+
+    // SettingsCard: CardBackgroundFillColorDefault / ControlFillColorSecondary / ControlFillColorTertiary.
+    out property <color> card: dark ? #ffffff0d : #ffffffb3;
+    out property <color> card-hover: dark ? #ffffff15 : #f9f9f980;
+    out property <color> card-pressed: dark ? #ffffff08 : #f9f9f94d;
+    out property <color> card-secondary: dark ? #ffffff08 : #f6f6f680;
+    out property <color> card-stroke: dark ? #0000001a : #0000000f;
+    out property <color> divider: dark ? #ffffff15 : #0000000f;
+
+    // Subtle buttons (navigation items, icon buttons): SubtleFillColorSecondary / Tertiary.
+    out property <color> subtle-hover: dark ? #ffffff0f : #00000009;
+    out property <color> subtle-pressed: dark ? #ffffff0a : #00000006;
+
+    // Key caps and chips (ControlFillColorDefault, ControlStrokeColorDefault).
+    out property <color> control: dark ? #ffffff0f : #ffffffb3;
+    out property <color> control-stroke: dark ? #ffffff12 : #0000000f;
+    out property <color> control-stroke-bottom: dark ? #ffffff24 : #00000029;
+
+    // ContentDialog.
+    out property <color> smoke: #0000004d;
+    out property <color> dialog: dark ? #2b2b2b : #ffffff;
+    out property <color> dialog-footer: dark ? #202020 : #f3f3f3;
+    out property <color> dialog-stroke: dark ? #ffffff15 : #0000000f;
+
+    // InfoBar backgrounds and icon colors per severity.
+    out property <color> info-background: dark ? #ffffff08 : #f6f6f680;
+    out property <color> success-background: dark ? #393d1b : #dff6dd;
+    out property <color> warning-background: dark ? #433519 : #fff4ce;
+    out property <color> error-background: dark ? #442726 : #fde7e9;
+    out property <color> success: dark ? #6ccb5f : #0f7b0f;
+    out property <color> error: dark ? #ff99a4 : #c42b1c;
+
+    // Type ramp (Segoe UI Variable sizes in WinUI).
+    out property <length> caption: 12px;
+    out property <length> body: 14px;
+    out property <length> subtitle: 20px;
+    out property <length> title: 28px;
+}

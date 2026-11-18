@@ -1,0 +1,170 @@
+import { Button, ProgressIndicator, Spinner } from "std-widgets.slint";
+import { L, Theme } from "../theme.slint";
+import { Page, SectionHeader, SettingsCard, InfoBar, Severity, ToggleSwitch, LinkButton } from "../controls.slint";
+import { About, App } from "../state.slint";
+
+export component AboutPage inherits Page {
+    title: L.t("About");
+
+    SettingsCard {
+        image: App.icon;
+        header: L.t("Dynamic Island for Windows");
+        description: About.version;
+        HorizontalLayout {
+            spacing: 8px;
+            Text {
+                text: About.status;
+                vertical-alignment: center;
+                font-size: Theme.body;
+                color: Theme.text-secondary;
+            }
+            if About.can-start: Button {
+                text: L.t("Start island");
+                clicked => { About.start-island(); }
+            }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E789}";
+        header: L.t("Welcome tour");
+        description: L.t("What the island does, its shortcuts, and which add-ons to use.");
+        Button {
+            text: L.t("Show the tour");
+            clicked => { About.show-welcome(); }
+        }
+    }
+
+    SectionHeader { text: L.t("Updates"); }
+
+    SettingsCard {
+        glyph: "\u{E895}";
+        header: L.t("Check for updates");
+        description: About.update-description;
+        HorizontalLayout {
+            spacing: 8px;
+            if About.checking: VerticalLayout {
+                alignment: center;
+                Spinner {
+                    width: 20px;
+                    height: 20px;
+                    indeterminate: true;
+                }
+            }
+            Button {
+                text: L.t("Check now");
+                enabled: !About.checking && !About.busy;
+                clicked => { About.check(); }
+            }
+        }
+    }
+
+    if About.update-open: InfoBar {
+        severity: About.update-severity;
+        title: About.update-title;
+        message: About.update-message;
+        VerticalLayout {
+            spacing: 8px;
+            padding-bottom: 4px;
+            if About.release-notes != "": Text {
+                text: About.release-notes;
+                wrap: word-wrap;
+                overflow: elide;
+                max-height: 160px;
+                font-size: Theme.body;
+                color: Theme.text-secondary;
+            }
+            if About.downloading: ProgressIndicator {
+                progress: About.progress;
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+                Button {
+                    text: About.install-text;
+                    primary: true;
+                    enabled: About.install-enabled;
+                    clicked => { About.install(); }
+                }
+                LinkButton {
+                    text: L.t("Release notes");
+                    clicked => { About.open-notes(); }
+                }
+            }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E823}";
+        header: L.t("Check automatically");
+        description: L.t("The island lets you know when a new version is out.");
+        ToggleSwitch {
+            checked <=> About.auto-check;
+            label: L.t("Check automatically");
+            toggled(on) => { About.auto-check-toggled(on); }
+        }
+    }
+
+    SectionHeader { text: L.t("Files"); }
+
+    SettingsCard {
+        glyph: "\u{E8A5}";
+        header: L.t("Settings file");
+        description: About.settings-file;
+        clickable: true;
+        clicked => { About.open-settings-file(); }
+    }
+
+    SettingsCard {
+        glyph: "\u{E777}";
+        header: L.t("Back up settings");
+        description: L.t("Save all settings to a file, or load them on another PC: add-ons, shortcuts, apps, calendar links. The file contains your calendar links, so keep it private.");
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                text: L.t("Export…");
+                clicked => { About.export-settings(); }
+            }
+            Button {
+                text: L.t("Import…");
+                clicked => { About.import-settings(); }
+            }
+        }
+    }
+
+    if About.backup-open: InfoBar {
+        severity: About.backup-severity;
+        message: About.backup-message;
+        closable: true;
+        closed => { About.backup-closed(); }
+    }
+
+    SettingsCard {
+        glyph: "\u{E9F9}";
+        header: L.t("Logs");
+        description: L.t("Look here if something isn't working.");
+        clickable: true;
+        clicked => { About.open-logs(); }
+    }
+
+    SettingsCard {
+        glyph: "\u{EBE8}";
+        header: L.t("Report a problem");
+        description: L.t("Opens a GitHub issue with your version, Windows version and the latest log lines filled in. You see and can edit everything first; nothing is sent automatically.");
+        Button {
+            text: L.t("Report a problem…");
+            clicked => { About.report(); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E7BA}";
+        header: L.t("Offer to report crashes");
+        description: L.t("If the island ever closes because of an error, it asks the next time it starts whether you want to report it. Nothing is sent unless you choose to.");
+        ToggleSwitch {
+            checked <=> About.crash-offers;
+            label: L.t("Offer to report crashes");
+            toggled(on) => { About.crash-offers-toggled(on); }
+        }
+    }
+}

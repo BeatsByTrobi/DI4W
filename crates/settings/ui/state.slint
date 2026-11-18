@@ -1,0 +1,240 @@
+// What the pages show and the actions they ask Rust for. Rust fills these globals (src/pages/*.rs).
+
+import { Severity } from "controls.slint";
+
+export enum Dialog { none, welcome, report }
+
+// The window: navigation, title bar, dialogs.
+export global App {
+    // 0 General, 1 Music, 2 Notifications, 3 Add-ons, 4 About.
+    in-out property <int> page;
+    in-out property <bool> pane-open: true;
+    in property <bool> window-active: true;
+    in property <image> icon: @image-url("../assets/island-64.png");
+    in-out property <Dialog> dialog: Dialog.none;
+    callback navigate(int);
+    callback close-window();
+    callback minimize-window();
+    callback zoom-window();
+}
+
+export struct OrderItem {
+    kind: string,
+    label: string,
+}
+
+export global General {
+    in property <bool> island-running: true;
+    in-out property <bool> autostart;
+    in property <bool> autostart-available: true;
+    in-out property <bool> hide-in-fullscreen;
+    in-out property <bool> sounds;
+    in property <string> hide-shortcut;
+    in property <string> expand-shortcut;
+    in property <bool> hide-shortcut-set;
+    in property <bool> expand-shortcut-set;
+    // -1 none, 0 the hide shortcut, 1 the open shortcut.
+    in property <int> recording: -1;
+    in-out property <bool> shortcut-warning;
+    in property <[OrderItem]> order;
+    in-out property <int> theme-index;
+    in-out property <int> size-index;
+    in-out property <float> top-offset;
+    in-out property <int> language-index;
+    in property <[string]> displays;
+    in-out property <int> display-index;
+    in property <float> preview-scale: 1;
+    in property <float> preview-offset: 8;
+    in property <bool> preview-light;
+
+    callback start-island();
+    callback autostart-toggled(bool);
+    callback hide-in-fullscreen-toggled(bool);
+    callback sounds-toggled(bool);
+    callback record-shortcut(int);
+    callback clear-shortcut(int);
+    callback stop-recording();
+    callback move-order(int, int);
+    callback reset-order();
+    callback theme-selected(int);
+    callback size-selected(int);
+    callback top-offset-changed(float);
+    callback language-selected(int);
+    callback display-selected(int);
+}
+
+export global Media {
+    in-out property <bool> enabled;
+    in-out property <bool> any-player;
+    in-out property <int> hide-after;
+    callback enabled-toggled(bool);
+    callback any-player-toggled(bool);
+    callback hide-after-changed(int);
+}
+
+export struct ChatAppRow {
+    name: string,
+    color: color,
+    description: string,
+    on: bool,
+}
+
+export global Notifications {
+    in property <bool> access-blocked;
+    in-out property <bool> enabled;
+    in-out property <bool> calls;
+    in property <[ChatAppRow]> chat-apps;
+    in property <[string]> other-apps;
+    callback open-privacy();
+    callback open-windows-settings();
+    callback enabled-toggled(bool);
+    callback calls-toggled(bool);
+    callback chat-app-toggled(int, bool);
+    callback add-app(string);
+    callback remove-app(int);
+}
+
+// One setting inside an add-on's expander.
+export enum ItemKind { number, switch, city, feeds, quiet, api }
+
+export struct AddonItem {
+    kind: ItemKind,
+    // The AddonSettings field it edits ("BatteryLowPercent").
+    key: string,
+    header: string,
+    description: string,
+    value: int,
+    minimum: int,
+    maximum: int,
+    unit: string,
+    on: bool,
+}
+
+// A section header (`section` set) or one add-on card.
+export struct AddonEntry {
+    section: string,
+    // The add-on's switch ("Battery"); "" for one without (the focus timer).
+    key: string,
+    header: string,
+    description: string,
+    glyph: string,
+    on: bool,
+    has-preview: bool,
+    status: string,
+    status-problem: bool,
+    expanded: bool,
+    items: [AddonItem],
+    // Quiet times (the "quiet" item).
+    quiet-hours: bool,
+    quiet-from-hour: int,
+    quiet-from-minute: int,
+    quiet-to-hour: int,
+    quiet-to-minute: int,
+    quiet-apps: [string],
+}
+
+export global Addons {
+    in property <[AddonEntry]> entries;
+    in property <string> summary;
+    in property <bool> no-matches;
+    in-out property <string> search;
+    in-out property <int> filter;
+    in property <bool> info-open;
+    in property <string> info-title;
+    in property <string> info-message;
+    in property <string> info-action;
+    in property <[string]> feeds;
+    in-out property <string> city;
+    in property <string> api-example;
+    // The open apps offered for quiet times, filled when the menu opens.
+    in property <[string]> open-apps;
+
+    callback search-changed(string);
+    callback filter-changed(int);
+    callback toggled(int, bool);
+    callback expanded(int, bool);
+    callback preview(int);
+    callback info-action-clicked();
+    callback info-closed();
+    callback number-changed(int, string, int);
+    callback switch-changed(int, string, bool);
+    callback city-changed(string);
+    callback add-feed(string);
+    callback remove-feed(int);
+    callback quiet-hours-toggled(int, bool);
+    callback quiet-from-changed(int, int, int);
+    callback quiet-to-changed(int, int, int);
+    callback quiet-remove-app(int, string);
+    callback quiet-add-app(int, string);
+    callback refresh-open-apps(int);
+    callback copy-example();
+    callback open-api-docs();
+}
+
+export global About {
+    in property <string> version;
+    in property <string> status;
+    in property <bool> can-start;
+    in property <string> update-description;
+    in property <bool> checking;
+    in property <bool> busy;
+    in property <bool> update-open;
+    in property <Severity> update-severity;
+    in property <string> update-title;
+    in property <string> update-message;
+    in property <string> release-notes;
+    in property <bool> downloading;
+    in property <float> progress;
+    in property <string> install-text;
+    in property <bool> install-enabled: true;
+    in-out property <bool> auto-check;
+    in-out property <bool> crash-offers;
+    in property <string> settings-file;
+    in property <bool> backup-open;
+    in property <Severity> backup-severity;
+    in property <string> backup-message;
+
+    callback start-island();
+    callback show-welcome();
+    callback check();
+    callback install();
+    callback open-notes();
+    callback auto-check-toggled(bool);
+    callback crash-offers-toggled(bool);
+    callback open-settings-file();
+    callback export-settings();
+    callback import-settings();
+    callback backup-closed();
+    callback open-logs();
+    callback report();
+}
+
+// The welcome tour.
+export struct Pick {
+    key: string,
+    label: string,
+    on: bool,
+}
+
+export global Welcome {
+    in-out property <int> step;
+    in property <float> preview-scale: 1;
+    in property <float> preview-offset: 8;
+    in property <bool> preview-light;
+    in property <[string]> hide-keys;
+    in property <[string]> expand-keys;
+    in property <[Pick]> picks;
+    in property <bool> autostart-available;
+    in-out property <bool> autostart;
+    callback pick-toggled(int, bool);
+    callback autostart-toggled(bool);
+    callback finished();
+}
+
+// The "Report a problem" form.
+export global Report {
+    in-out property <string> title;
+    in-out property <string> body;
+    callback open-on-github(string, string);
+    callback copy(string);
+}

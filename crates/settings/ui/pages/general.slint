@@ -1,0 +1,281 @@
+import { Button, ComboBox, Slider } from "std-widgets.slint";
+import { L, Theme } from "../theme.slint";
+import { Page, SectionHeader, SettingsCard, SettingsCardVertical, InfoBar, Severity, ToggleSwitch, IslandPreview, ShortcutBox, Glyph } from "../controls.slint";
+import { General, OrderItem } from "../state.slint";
+
+// The activity order: drag a row up or down (ListView with CanReorderItems).
+component OrderList inherits Rectangle {
+    in property <[OrderItem]> items;
+    callback moved(int, int);
+
+    property <length> row-height: 40px;
+    property <length> gap: 4px;
+    property <int> dragging: -1;
+    property <length> drag-y;
+    property <int> target: root.dragging < 0 ? -1 : max(0, min(root.items.length - 1, root.dragging + round(root.drag-y / (root.row-height + root.gap))));
+
+    max-width: 420px;
+    height: root.items.length * (root.row-height + root.gap) - root.gap;
+    accessible-role: list;
+
+    for item[i] in root.items: Rectangle {
+        // Rows between the dragged one and where it would land make room for it.
+        property <length> shift: root.dragging < 0 || i == root.dragging ? 0px
+            : (i > root.dragging && i <= root.target) ? -(root.row-height + root.gap)
+            : (i < root.dragging && i >= root.target) ? (root.row-height + root.gap)
+            : 0px;
+        x: 0;
+        width: parent.width;
+        height: root.row-height;
+        y: i * (root.row-height + root.gap) + (i == root.dragging ? root.drag-y : self.shift);
+        z: i == root.dragging ? 1 : 0;
+        animate y {
+            duration: i == root.dragging ? 0ms : 150ms;
+            easing: ease-out;
+        }
+        border-radius: 4px;
+        background: i == root.dragging ? (Theme.dark ? #3a3a3a : #ffffff) : touch.pressed ? Theme.subtle-pressed : touch.has-hover ? Theme.subtle-hover : transparent;
+        drop-shadow-blur: i == root.dragging ? 12px : 0px;
+        drop-shadow-color: #00000040;
+        accessible-role: list-item;
+        accessible-label: item.label;
+        accessible-item-index: i;
+
+        touch := TouchArea {
+            mouse-cursor: root.dragging == i ? grabbing : grab;
+            moved => {
+                if self.pressed {
+                    root.dragging = i;
+                    root.drag-y = self.mouse-y - self.pressed-y;
+                }
+            }
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel {
+                    if root.dragging == i {
+                        let to = root.target;
+                        root.dragging = -1;
+                        root.drag-y = 0;
+                        if to != i && to >= 0 {
+                            root.moved(i, to);
+                        }
+                    }
+                }
+            }
+        }
+        Text {
+            x: 16px;
+            text: item.label;
+            vertical-alignment: center;
+            font-size: Theme.body;
+            color: Theme.text-primary;
+        }
+    }
+}
+
+export component GeneralPage inherits Page {
+    title: L.t("General");
+
+    if !General.island-running: InfoBar {
+        severity: Severity.warning;
+        title: L.t("The island isn't running");
+        message: L.t("Changes are saved and apply the next time it starts.");
+        action: L.t("Start island");
+        action-clicked => { General.start-island(); }
+    }
+
+    SectionHeader { text: L.t("Behavior"); }
+
+    SettingsCard {
+        glyph: "\u{E7E8}";
+        header: L.t("Start with Windows");
+        description: General.autostart-available ? L.t("Open the island when you sign in.") : L.t("Start the island once first, so this app knows where it is.");
+        enabled: General.autostart-available;
+        ToggleSwitch {
+            checked <=> General.autostart;
+            enabled: General.autostart-available;
+            label: L.t("Start with Windows");
+            toggled(on) => { General.autostart-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E740}";
+        header: L.t("Hide in fullscreen apps");
+        description: L.t("Get out of the way while a game, video or presentation fills the screen. Screenshots never hide it.");
+        ToggleSwitch {
+            checked <=> General.hide-in-fullscreen;
+            label: L.t("Hide in fullscreen apps");
+            toggled(on) => { General.hide-in-fullscreen-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E767}";
+        header: L.t("Sounds");
+        description: L.t("Chimes for alerts and the timer alarm.");
+        ToggleSwitch {
+            checked <=> General.sounds;
+            label: L.t("Sounds");
+            toggled(on) => { General.sounds-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E765}";
+        header: L.t("Hide island shortcut");
+        description: L.t("Press this anywhere to hide the island, and again to bring it back.");
+        ShortcutBox {
+            text: General.hide-shortcut;
+            can-clear: General.hide-shortcut-set;
+            recording: General.recording == 0;
+            label: L.t("Hide island shortcut");
+            record => { General.record-shortcut(0); }
+            clear => { General.clear-shortcut(0); }
+            stop => { General.stop-recording(); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E8A7}";
+        header: L.t("Open island shortcut");
+        description: L.t("Opens what the island shows (or the timer picker) without the mouse; screen readers read it out. Press again to close.");
+        ShortcutBox {
+            text: General.expand-shortcut;
+            can-clear: General.expand-shortcut-set;
+            recording: General.recording == 1;
+            label: L.t("Open island shortcut");
+            record => { General.record-shortcut(1); }
+            clear => { General.clear-shortcut(1); }
+            stop => { General.stop-recording(); }
+        }
+    }
+
+    if General.shortcut-warning: InfoBar {
+        severity: Severity.warning;
+        closable: true;
+        title: L.t("That shortcut is already in use");
+        message: L.t("Another app (or the island's other shortcut) has claimed it, so the island won't react to it. Try a different one.");
+        closed => { General.shortcut-warning = false; }
+    }
+
+    SectionHeader { text: L.t("Order"); }
+
+    SettingsCardVertical {
+        glyph: "\u{E8CB}";
+        header: L.t("What gets the island first");
+        description: L.t("When several things run at once, the top one gets the pill and the next one the small circle. Drag to change the order.");
+        VerticalLayout {
+            spacing: 8px;
+            alignment: start;
+            HorizontalLayout {
+                alignment: start;
+                OrderList {
+                    width: 420px;
+                    items: General.order;
+                    moved(from, to) => { General.move-order(from, to); }
+                }
+            }
+            HorizontalLayout {
+                alignment: start;
+                Button {
+                    text: L.t("Reset to the standard order");
+                    clicked => { General.reset-order(); }
+                }
+            }
+        }
+    }
+
+    SectionHeader { text: L.t("Appearance"); }
+
+    SettingsCardVertical {
+        header: L.t("Preview");
+        description: L.t("How the island looks with the options below.");
+        HorizontalLayout {
+            alignment: stretch;
+            IslandPreview {
+                max-width: 560px;
+                scale: General.preview-scale;
+                offset: General.preview-offset;
+                light: General.preview-light;
+            }
+            Rectangle { horizontal-stretch: 0; }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E790}";
+        header: L.t("Theme");
+        description: L.t("Black like the iPhone, light, or matching Windows. The island restarts to switch.");
+        ComboBox {
+            min-width: 200px;
+            model: [L.t("Dark"), L.t("Light"), L.t("Match Windows")];
+            current-index <=> General.theme-index;
+            accessible-label: L.t("Theme");
+            selected => { General.theme-selected(self.current-index); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E71E}";
+        header: L.t("Size");
+        description: L.t("How big the island is.");
+        ComboBox {
+            min-width: 160px;
+            model: [L.t("Small"), L.t("Normal"), L.t("Large"), L.t("Extra large")];
+            current-index <=> General.size-index;
+            accessible-label: L.t("Size");
+            selected => { General.size-selected(self.current-index); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E76F}";
+        header: L.t("Distance from top");
+        description: L.t("Space between the top of the screen and the island.");
+        HorizontalLayout {
+            spacing: 12px;
+            Slider {
+                width: 200px;
+                minimum: 0;
+                maximum: 40;
+                step: 1;
+                value <=> General.top-offset;
+                accessible-label: L.t("Distance from top");
+                changed(value) => { General.top-offset-changed(value); }
+            }
+            Text {
+                min-width: 36px;
+                text: round(General.top-offset) + " px";
+                vertical-alignment: center;
+                font-size: Theme.body;
+                color: Theme.text-primary;
+            }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E774}";
+        header: L.t("Language");
+        description: L.t("For the island and this app. Both restart to switch.");
+        ComboBox {
+            min-width: 200px;
+            model: [L.t("Automatic (Windows language)"), "English", "Nederlands", "Deutsch", "Français"];
+            current-index <=> General.language-index;
+            accessible-label: L.t("Language");
+            selected => { General.language-selected(self.current-index); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E7F4}";
+        header: L.t("Show on");
+        description: L.t("Which display the island sits on. It stays below a taskbar at the top of the screen.");
+        ComboBox {
+            min-width: 260px;
+            model: General.displays;
+            current-index <=> General.display-index;
+            accessible-label: L.t("Show on");
+            selected => { General.display-selected(self.current-index); }
+        }
+    }
+}

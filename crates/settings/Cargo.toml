@@ -4,10 +4,48 @@ description = "The settings app: DynamicIsland.Settings.exe"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+build = "build.rs"
 
 [[bin]]
 name = "DynamicIsland-Settings"
 path = "src/main.rs"
 
 [dependencies]
+regex = "1"
 di4w-core.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+ureq.workspace = true
+slint = { version = "1.19", features = ["raw-window-handle-06"] }
+raw-window-handle = "0.6"
+sha2 = "0.10"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+rfd = "0.15"
+
+[dependencies.windows]
+workspace = true
+features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Graphics_Gdi",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_DataExchange",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_UI_Controls",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+[build-dependencies]
+slint-build = "1.19"
+embed-resource = "3"
+
+[dev-dependencies]
+tempfile = "3"

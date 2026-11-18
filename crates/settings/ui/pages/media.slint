@@ -1,0 +1,48 @@
+import { SpinBox } from "std-widgets.slint";
+import { L } from "../theme.slint";
+import { Page, SettingsCard, ToggleSwitch } from "../controls.slint";
+import { Media } from "../state.slint";
+
+export component MediaPage inherits Page {
+    title: L.t("Music");
+
+    SettingsCard {
+        glyph: "\u{E8D6}";
+        header: L.t("Show what's playing");
+        description: L.t("Album art, live audio bars and playback controls. The island restarts to apply this.");
+        ToggleSwitch {
+            checked <=> Media.enabled;
+            label: L.t("Show what's playing");
+            toggled(on) => { Media.enabled-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E93C}";
+        header: L.t("Show any media player");
+        description: L.t("Off: only Spotify. On: browsers, Apple Music and anything else that uses Windows media controls.");
+        enabled: Media.enabled;
+        ToggleSwitch {
+            checked <=> Media.any-player;
+            enabled: Media.enabled;
+            label: L.t("Show any media player");
+            toggled(on) => { Media.any-player-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E916}";
+        header: L.t("Hide after pausing");
+        description: L.t("Seconds the music stays in the island after you pause.");
+        enabled: Media.enabled;
+        SpinBox {
+            min-width: 140px;
+            minimum: 1;
+            maximum: 600;
+            value <=> Media.hide-after;
+            enabled: Media.enabled;
+            accessible-label: L.t("Hide after pausing");
+            edited(value) => { Media.hide-after-changed(value); }
+        }
+    }
+}

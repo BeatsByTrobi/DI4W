@@ -1,0 +1,149 @@
+import { Button, LineEdit } from "std-widgets.slint";
+import { L, Theme } from "../theme.slint";
+import { Page, SectionHeader, SettingsCard, SettingsExpander, ExpanderItem, InfoBar, Severity, ToggleSwitch, IconButton } from "../controls.slint";
+import { Notifications } from "../state.slint";
+
+export component NotificationsPage inherits Page {
+    title: L.t("Notifications");
+
+    if Notifications.access-blocked: InfoBar {
+        severity: Severity.warning;
+        title: L.t("Windows is blocking notification access");
+        message: L.t("The island can't see new messages until you allow it under Privacy & security → Notifications.");
+        action: L.t("Open Windows settings");
+        action-clicked => { Notifications.open-privacy(); }
+    }
+
+    SettingsCard {
+        glyph: "\u{EA8F}";
+        header: L.t("Show notifications in the island");
+        description: L.t("New messages pop out of the island. Click one to jump to the app.");
+        ToggleSwitch {
+            checked <=> Notifications.enabled;
+            label: L.t("Show notifications in the island");
+            toggled(on) => { Notifications.enabled-toggled(on); }
+        }
+    }
+
+    SettingsCard {
+        glyph: "\u{E72E}";
+        header: L.t("Windows notification access");
+        description: L.t("The island needs permission to read your notifications. Turn off an app's own banners there if you only want the island pop-up.");
+        clickable: true;
+        clicked => { Notifications.open-windows-settings(); }
+    }
+
+    SettingsCard {
+        glyph: "\u{E717}";
+        header: L.t("Incoming calls");
+        description: L.t("Calls from Discord, WhatsApp, Telegram, Teams, Slack and Signal show as a call card. Answer switches to the app; Decline dismisses it.");
+        enabled: Notifications.enabled;
+        ToggleSwitch {
+            checked <=> Notifications.calls;
+            enabled: Notifications.enabled;
+            label: L.t("Incoming calls");
+            toggled(on) => { Notifications.calls-toggled(on); }
+        }
+    }
+
+    SectionHeader { text: L.t("Chat apps"); }
+
+    // One switch per built-in chat app, with a brand-colored dot like the island's fallback icon.
+    for app[i] in Notifications.chat-apps: Rectangle {
+        min-height: 68px;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: Theme.card-stroke;
+        background: Theme.card;
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            spacing: 12px;
+            VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 8px;
+                    background: app.color;
+                }
+            }
+            VerticalLayout {
+                alignment: center;
+                horizontal-stretch: 1;
+                spacing: 1px;
+                Text {
+                    text: app.name;
+                    font-size: Theme.body;
+                    color: Notifications.enabled ? Theme.text-primary : Theme.text-disabled;
+                }
+                Text {
+                    text: app.description;
+                    font-size: Theme.caption;
+                    color: Notifications.enabled ? Theme.text-secondary : Theme.text-disabled;
+                }
+            }
+            ToggleSwitch {
+                checked: app.on;
+                enabled: Notifications.enabled;
+                label: app.name;
+                toggled(on) => { Notifications.chat-app-toggled(i, on); }
+            }
+        }
+    }
+
+    SectionHeader { text: L.t("Other apps"); }
+
+    SettingsExpander {
+        glyph: "\u{E71D}";
+        header: L.t("More apps that pop out of the island");
+        description: L.t("Matched on the name Windows shows for the app's notifications, e.g. Spotify or Steam.");
+        enabled: Notifications.enabled;
+        expanded: true;
+        // ItemsHeader: the box to add an app.
+        Rectangle {
+            Rectangle {
+                y: 0;
+                height: 1px;
+                background: Theme.divider;
+            }
+            HorizontalLayout {
+                padding-left: 58px;
+                padding-right: 16px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+                spacing: 8px;
+                new-app := LineEdit {
+                    horizontal-stretch: 1;
+                    placeholder-text: L.t("App name");
+                    enabled: Notifications.enabled;
+                    accepted(text) => {
+                        Notifications.add-app(text);
+                        self.text = "";
+                    }
+                }
+                Button {
+                    text: L.t("Add");
+                    primary: true;
+                    enabled: Notifications.enabled;
+                    clicked => {
+                        Notifications.add-app(new-app.text);
+                        new-app.text = "";
+                    }
+                }
+            }
+        }
+        for app[i] in Notifications.other-apps: ExpanderItem {
+            header: app;
+            enabled: Notifications.enabled;
+            IconButton {
+                glyph: "\u{E74D}";
+                enabled: Notifications.enabled;
+                tooltip: L.f("Remove {0}", [app]);
+                clicked => { Notifications.remove-app(i); }
+            }
+        }
+    }
+}

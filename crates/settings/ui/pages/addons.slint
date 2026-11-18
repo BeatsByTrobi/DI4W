@@ -1,0 +1,394 @@
+import { Button, CheckBox, ComboBox, LineEdit, SpinBox } from "std-widgets.slint";
+import { L, Theme } from "../theme.slint";
+import { Page, SectionHeader, SettingsCard, SettingsExpander, ExpanderItem, ExpanderItemVertical, InfoBar, Severity, ToggleSwitch, IconButton, LinkButton, Glyph, Note, TimeField } from "../controls.slint";
+import { Addons, AddonEntry, AddonItem, ItemKind } from "../state.slint";
+
+// DropDownButton: a button with a chevron that opens a menu.
+component DropDownButton inherits Rectangle {
+    in property <string> text;
+    callback clicked;
+    height: 32px;
+    width: label.preferred-width + 48px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Theme.control-stroke;
+    background: touch.pressed ? Theme.card-pressed : touch.has-hover ? Theme.card-hover : Theme.control;
+    accessible-role: button;
+    accessible-label: root.text;
+    accessible-action-default => { root.clicked(); }
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+    HorizontalLayout {
+        padding-left: 11px;
+        padding-right: 11px;
+        spacing: 8px;
+        label := Text {
+            text: root.text;
+            vertical-alignment: center;
+            font-size: Theme.body;
+            color: Theme.text-primary;
+        }
+        Glyph {
+            text: "\u{E70D}";
+            font-size: 12px;
+            width: 12px;
+        }
+    }
+}
+
+// An app in the quiet-times list: its name and an ×, removed when clicked.
+component Chip inherits Rectangle {
+    in property <string> text;
+    property <string> remove-tip: L.t("Remove");
+    callback clicked;
+    height: 28px;
+    width: chip-label.preferred-width + 36px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Theme.control-stroke;
+    background: touch.pressed ? Theme.card-pressed : touch.has-hover ? Theme.card-hover : Theme.control;
+    accessible-role: button;
+    accessible-label: L.t("Remove") + " " + root.text;
+    accessible-action-default => { root.clicked(); }
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 8px;
+        spacing: 6px;
+        chip-label := Text {
+            text: root.text;
+            vertical-alignment: center;
+            font-size: Theme.body;
+            color: Theme.text-primary;
+        }
+        Glyph {
+            text: "\u{E711}";
+            font-size: 10px;
+            width: 10px;
+        }
+    }
+    Tooltip {
+        text: @markdown("\{root.remove-tip}");
+    }
+}
+
+// The settings inside an add-on's expander.
+component AddonItems inherits VerticalLayout {
+    in property <AddonEntry> entry;
+    in property <int> index;
+    for item in root.entry.items: VerticalLayout {
+        if item.kind == ItemKind.number: ExpanderItem {
+            header: item.header;
+            HorizontalLayout {
+                spacing: 8px;
+                SpinBox {
+                    min-width: 110px;
+                    minimum: item.minimum;
+                    maximum: item.maximum;
+                    value: item.value;
+                    accessible-label: item.header;
+                    edited(value) => { Addons.number-changed(root.index, item.key, value); }
+                }
+                if item.unit != "": Text {
+                    text: item.unit;
+                    vertical-alignment: center;
+                    font-size: Theme.body;
+                    color: Theme.text-primary;
+                }
+            }
+        }
+        if item.kind == ItemKind.switch: ExpanderItem {
+            header: item.header;
+            description: item.description;
+            ToggleSwitch {
+                checked: item.on;
+                label: item.header;
+                toggled(on) => { Addons.switch-changed(root.index, item.key, on); }
+            }
+        }
+        if item.kind == ItemKind.city: ExpanderItem {
+            header: L.t("City");
+            description: L.t("Leave empty to use your Windows location (Settings → Privacy & security → Location → let desktop apps access your location).");
+            city := LineEdit {
+                min-width: 220px;
+                text: Addons.city;
+                placeholder-text: L.t("e.g. Amsterdam");
+                accessible-label: L.t("City");
+                accepted(text) => { Addons.city-changed(text); }
+                changed has-focus => {
+                    if !self.has-focus {
+                        Addons.city-changed(self.text);
+                    }
+                }
+            }
+        }
+        if item.kind == ItemKind.feeds: ExpanderItemVertical {
+            header: L.t("Calendar links");
+            Note {
+                text: L.t("Paste a calendar link (.ics). Outlook: Settings → Calendar → Shared calendars → Publish a calendar → copy the ICS link. Google Calendar: Settings → your calendar → Secret address in iCal format. Anyone with the link can see the calendar, so keep it private.");
+            }
+            if Addons.feeds.length > 0: VerticalLayout {
+                spacing: 4px;
+                for feed[f] in Addons.feeds: HorizontalLayout {
+                    spacing: 8px;
+                    Text {
+                        horizontal-stretch: 1;
+                        text: feed;
+                        overflow: elide;
+                        vertical-alignment: center;
+                        font-size: Theme.body;
+                        color: Theme.text-primary;
+                    }
+                    IconButton {
+                        glyph: "\u{E74D}";
+                        tooltip: L.t("Remove");
+                        clicked => { Addons.remove-feed(f); }
+                    }
+                }
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+                feed-input := LineEdit {
+                    min-width: 320px;
+                    placeholder-text: "https://…/calendar.ics";
+                    accessible-label: L.t("Calendar links");
+                    accepted(text) => {
+                        Addons.add-feed(text);
+                        self.text = "";
+                    }
+                }
+                Button {
+                    text: L.t("Add");
+                    primary: true;
+                    clicked => {
+                        Addons.add-feed(feed-input.text);
+                        feed-input.text = "";
+                    }
+                }
+            }
+        }
+        if item.kind == ItemKind.api: ExpanderItemVertical {
+            header: L.t("Examples");
+            TextInput {
+                text: Addons.api-example;
+                read-only: true;
+                wrap: word-wrap;
+                font-family: Theme.mono-font;
+                font-size: 12px;
+                color: Theme.text-primary;
+                selection-background-color: Theme.accent.with-alpha(0.4);
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+                Button {
+                    text: L.t("Copy example");
+                    clicked => { Addons.copy-example(); }
+                }
+                LinkButton {
+                    text: L.t("Full API description");
+                    clicked => { Addons.open-api-docs(); }
+                }
+            }
+        }
+        if item.kind == ItemKind.quiet: ExpanderItemVertical {
+            header: L.t("Quiet times");
+            description: L.t("Its pop-ups stay away then. You'll still find them under Recent in the island.");
+            VerticalLayout {
+                spacing: 12px;
+                // Hours: [x] Quiet between [22:00] and [08:00]
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    CheckBox {
+                        text: L.t("Quiet between");
+                        checked: root.entry.quiet-hours;
+                        toggled => { Addons.quiet-hours-toggled(root.index, self.checked); }
+                    }
+                    TimeField {
+                        hour: root.entry.quiet-from-hour;
+                        minute: root.entry.quiet-from-minute;
+                        enabled: root.entry.quiet-hours;
+                        label: L.t("Quiet between");
+                        changed(h, m) => { Addons.quiet-from-changed(root.index, h, m); }
+                    }
+                    Text {
+                        text: L.t("and");
+                        vertical-alignment: center;
+                        font-size: Theme.body;
+                        color: Theme.text-primary;
+                    }
+                    TimeField {
+                        hour: root.entry.quiet-to-hour;
+                        minute: root.entry.quiet-to-minute;
+                        enabled: root.entry.quiet-hours;
+                        label: L.t("and");
+                        changed(h, m) => { Addons.quiet-to-changed(root.index, h, m); }
+                    }
+                }
+                // Apps: chips with a remove button, and a drop-down of the apps that are open now.
+                VerticalLayout {
+                    spacing: 6px;
+                    Text {
+                        text: L.t("Also quiet while one of these apps is in front:");
+                        wrap: word-wrap;
+                        font-size: Theme.body;
+                        color: Theme.text-primary;
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+                        for app in root.entry.quiet-apps: VerticalLayout {
+                            alignment: center;
+                            Chip {
+                                text: app;
+                                clicked => { Addons.quiet-remove-app(root.index, app); }
+                            }
+                        }
+                        add := DropDownButton {
+                            text: L.t("Add an open app");
+                            clicked => {
+                                Addons.refresh-open-apps(root.index);
+                                menu.show({ x: 0, y: self.height + 2px });
+                            }
+                            menu := ContextMenuArea {
+                                Menu {
+                                    for app in Addons.open-apps: MenuItem {
+                                        title: app;
+                                        activated => { Addons.quiet-add-app(root.index, app); }
+                                    }
+                                    if Addons.open-apps.length == 0: MenuItem {
+                                        title: L.t("No other apps are open");
+                                        enabled: false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component AddonsPage inherits Page {
+    property <string> preview-tip: L.t("Show a sample in the island");
+    title: L.t("Add-ons");
+    title-bottom: 0px;
+
+    Note {
+        text: L.t("Extra things the island can show. Changes apply right away; Preview shows a sample in the island.");
+    }
+    Rectangle { height: 8px; }
+
+    HorizontalLayout {
+        spacing: 8px;
+        Rectangle {
+            max-width: 420px;
+            horizontal-stretch: 1;
+            search := LineEdit {
+                width: 100%;
+                text <=> Addons.search;
+                placeholder-text: L.t("Search add-ons");
+                accessible-label: L.t("Search add-ons");
+                edited(text) => { Addons.search-changed(text); }
+            }
+            Glyph {
+                x: parent.width - 30px;
+                width: 20px;
+                text: "\u{E721}";
+                font-size: 12px;
+                color: Theme.text-secondary;
+            }
+        }
+        Rectangle { horizontal-stretch: 0.0001; }
+        ComboBox {
+            min-width: 150px;
+            model: [L.t("All add-ons"), L.t("Turned on"), L.t("Turned off")];
+            current-index <=> Addons.filter;
+            selected => { Addons.filter-changed(self.current-index); }
+        }
+    }
+    HorizontalLayout {
+        padding-left: 2px;
+        padding-top: 2px;
+        Text {
+            text: Addons.summary;
+            font-size: Theme.body;
+            color: Theme.text-tertiary;
+        }
+    }
+
+    if Addons.info-open: VerticalLayout {
+        padding-top: 4px;
+        InfoBar {
+            severity: Severity.informational;
+            closable: true;
+            title: Addons.info-title;
+            message: Addons.info-message;
+            action: Addons.info-action;
+            action-clicked => { Addons.info-action-clicked(); }
+            closed => { Addons.info-closed(); }
+        }
+    }
+
+    if Addons.no-matches: VerticalLayout {
+        padding-top: 20px;
+        padding-left: 2px;
+        Text {
+            text: L.t("No add-ons match your search.");
+            font-size: Theme.body;
+            color: Theme.text-secondary;
+        }
+    }
+
+    for entry[i] in Addons.entries: VerticalLayout {
+        if entry.section != "": SectionHeader {
+            text: entry.section;
+        }
+        if entry.section == "" && entry.items.length == 0: SettingsCard {
+            glyph: entry.glyph;
+            header: entry.header;
+            description: entry.description;
+            status: entry.status;
+            status-problem: entry.status-problem;
+            if entry.has-preview: VerticalLayout {
+                alignment: center;
+                Button {
+                    text: L.t("Preview");
+                    clicked => { Addons.preview(i); }
+                    Tooltip {
+                        text: @markdown("\{root.preview-tip}");
+                    }
+                }
+            }
+            if entry.key != "": ToggleSwitch {
+                checked: entry.on;
+                label: entry.header;
+                toggled(on) => { Addons.toggled(i, on); }
+            }
+        }
+        if entry.section == "" && entry.items.length > 0: SettingsExpander {
+            glyph: entry.glyph;
+            header: entry.header;
+            description: entry.description;
+            status: entry.status;
+            status-problem: entry.status-problem;
+            expanded: entry.expanded;
+            has-switch: entry.key != "";
+            on: entry.on;
+            has-preview: entry.has-preview;
+            toggled(on) => { Addons.toggled(i, on); }
+            preview => { Addons.preview(i); }
+            expanded-changed(open) => { Addons.expanded(i, open); }
+            AddonItems {
+                entry: entry;
+                index: i;
+            }
+        }
+    }
+}

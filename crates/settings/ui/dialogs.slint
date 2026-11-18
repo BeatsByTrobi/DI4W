@@ -1,0 +1,223 @@
+// The welcome tour and the "Report a problem" form, shown as ContentDialogs over the window.
+
+import { CheckBox, LineEdit, TextEdit } from "std-widgets.slint";
+import { L, Theme } from "theme.slint";
+import { ContentDialog, IslandPreview, Glyph, KeyCap } from "controls.slint";
+import { App, Dialog, Welcome, Report } from "state.slint";
+
+component Paragraph inherits Text {
+    in property <bool> secondary;
+    wrap: word-wrap;
+    font-size: Theme.body;
+    color: root.secondary ? Theme.text-secondary : Theme.text-primary;
+}
+
+component Tip inherits HorizontalLayout {
+    in property <string> glyph;
+    in property <string> text;
+    spacing: 12px;
+    VerticalLayout {
+        padding-top: 2px;
+        alignment: start;
+        Glyph {
+            text: root.glyph;
+            width: 20px;
+        }
+    }
+    Paragraph {
+        horizontal-stretch: 1;
+        text: root.text;
+    }
+}
+
+// "Ctrl" "Alt" "I" as key caps, then what the shortcut does.
+component ShortcutRow inherits VerticalLayout {
+    in property <[string]> keys;
+    in property <string> what;
+    spacing: 6px;
+    HorizontalLayout {
+        spacing: 4px;
+        alignment: start;
+        for key in root.keys: KeyCap {
+            text: key;
+        }
+    }
+    Paragraph {
+        text: root.what;
+    }
+}
+
+export component WelcomeDialog inherits ContentDialog {
+    property <int> last: 2;
+    title: Welcome.step == 0 ? L.t("Welcome to Dynamic Island") : Welcome.step == 1 ? L.t("Two shortcuts to remember") : L.t("Pick what pops up");
+    primary: Welcome.step == root.last ? L.t("Get started") : L.t("Next");
+    secondary: Welcome.step == 0 ? "" : L.t("Back");
+    close: L.t("Skip");
+    content-width: 460px;
+    primary-clicked => {
+        if Welcome.step < root.last {
+            Welcome.step += 1;
+        } else {
+            root.finish();
+        }
+    }
+    secondary-clicked => { Welcome.step = max(0, Welcome.step - 1); }
+    close-clicked => { root.finish(); }
+
+    function finish() {
+        App.dialog = Dialog.none;
+        Welcome.finished();
+    }
+
+    VerticalLayout {
+        min-height: 330px;
+        alignment: start;
+        if Welcome.step == 0: VerticalLayout {
+            spacing: 12px;
+            VerticalLayout {
+                padding-top: 4px;
+                padding-bottom: 12px;
+                IslandPreview {
+                    scale: Welcome.preview-scale;
+                    offset: Welcome.preview-offset;
+                    light: Welcome.preview-light;
+                }
+            }
+            Paragraph {
+                text: L.t("The island at the top of your screen shows what's going on, like on an iPhone: music, timers, downloads, messages from your chat apps and more.");
+            }
+            Tip {
+                glyph: "\u{E7C9}";
+                text: L.t("Point at it to see more, and click it to open it.");
+            }
+            Tip {
+                glyph: "\u{E916}";
+                text: L.t("Click the empty island to start a timer, focus session or stopwatch.");
+            }
+            Tip {
+                glyph: "\u{E712}";
+                text: L.t("Right-click it for the menu. The tray icon has the same menu.");
+            }
+        }
+        if Welcome.step == 1: VerticalLayout {
+            spacing: 16px;
+            Paragraph {
+                text: L.t("They work from any app.");
+            }
+            ShortcutRow {
+                keys: Welcome.hide-keys;
+                what: L.t("Hide the island, and bring it back");
+            }
+            ShortcutRow {
+                keys: Welcome.expand-keys;
+                what: L.t("Open what the island shows, without the mouse (screen readers read it out)");
+            }
+            Paragraph {
+                secondary: true;
+                text: L.t("Change them under General.");
+            }
+        }
+        if Welcome.step == 2: VerticalLayout {
+            spacing: 12px;
+            Paragraph {
+                text: L.t("Turn on what you'd like to see. Calendar and weather need a link or a city, under Add-ons.");
+            }
+            GridLayout {
+                spacing-horizontal: 12px;
+                spacing-vertical: 0px;
+                for pick[i] in Welcome.picks: CheckBox {
+                    row: i / 2;
+                    col: mod(i, 2);
+                    text: pick.label;
+                    checked: pick.on;
+                    toggled => { Welcome.pick-toggled(i, self.checked); }
+                }
+            }
+            if Welcome.autostart-available: VerticalLayout {
+                padding-top: 8px;
+                CheckBox {
+                    text: L.t("Start Dynamic Island with Windows");
+                    checked <=> Welcome.autostart;
+                    toggled => { Welcome.autostart-toggled(self.checked); }
+                }
+            }
+            Paragraph {
+                secondary: true;
+                text: L.t("There's more under Add-ons, each with a Preview button.");
+            }
+        }
+    }
+
+    // PipsPager: one dot per step.
+    HorizontalLayout {
+        padding-top: 16px;
+        alignment: center;
+        spacing: 0px;
+        for n in 3: Rectangle {
+            width: 20px;
+            height: 20px;
+            accessible-role: button;
+            accessible-label: n + 1;
+            accessible-action-default => { Welcome.step = n; }
+            pip-touch := TouchArea {
+                clicked => { Welcome.step = n; }
+            }
+            Rectangle {
+                width: n == Welcome.step ? 6px : pip-touch.has-hover ? 5px : 4px;
+                height: self.width;
+                border-radius: self.width / 2;
+                background: n == Welcome.step ? Theme.text-secondary : Theme.text-tertiary;
+            }
+        }
+    }
+}
+
+export component ReportDialog inherits ContentDialog {
+    title: L.t("Report a problem");
+    primary: L.t("Open on GitHub");
+    secondary: L.t("Copy");
+    close: L.t("Cancel");
+    content-width: 560px;
+    primary-clicked => {
+        Report.open-on-github(title-box.text, body-box.text);
+        App.dialog = Dialog.none;
+    }
+    secondary-clicked => {
+        Report.copy(body-box.text);
+        App.dialog = Dialog.none;
+    }
+    close-clicked => { App.dialog = Dialog.none; }
+
+    VerticalLayout {
+        spacing: 12px;
+        VerticalLayout {
+            spacing: 8px;
+            Text {
+                text: L.t("Title");
+                font-size: Theme.body;
+                color: Theme.text-primary;
+            }
+            title-box := LineEdit {
+                text <=> Report.title;
+                placeholder-text: L.t("Short summary, e.g. \"Weather doesn't show\"");
+                accessible-label: L.t("Title");
+            }
+        }
+        VerticalLayout {
+            spacing: 8px;
+            Text {
+                text: L.t("Report (you can change anything)");
+                font-size: Theme.body;
+                color: Theme.text-primary;
+            }
+            body-box := TextEdit {
+                height: 320px;
+                text <=> Report.body;
+                wrap: word-wrap;
+                font-size: 12px;
+                font-family: Theme.mono-font;
+                accessible-label: L.t("Report (you can change anything)");
+            }
+        }
+    }
+}
