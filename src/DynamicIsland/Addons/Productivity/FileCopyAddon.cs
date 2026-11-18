@@ -16,7 +16,7 @@ namespace DynamicIsland.Addons.Productivity;
 /// </summary>
 public sealed partial class FileCopyAddon : Addon
 {
-    private const double BarWidth = 336; // expanded width 380 minus margins
+    private const double BarWidth = Ui.AlertWidth - 2 * 18; // expanded width minus margins
 
     private readonly TextBlock _percent = Ui.Text("", 14, FontWeights.SemiBold, Ui.Teal, tabular: true);
     private readonly TextBlock _title = Ui.Text("", 15, FontWeights.SemiBold, Ui.Primary);
@@ -31,10 +31,10 @@ public sealed partial class FileCopyAddon : Addon
     public FileCopyAddon(AddonContext context) : base(context)
     {
         _track = new Border { Width = BarWidth, Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.Track, Child = _fill, Margin = new Thickness(0, 12, 0, 0) };
-        var expanded = new StackPanel { Margin = new Thickness(22, 18, 22, 16), Children = { _title, _track } };
+        var expanded = new StackPanel { Margin = new Thickness(18, 18, 18, 16), Children = { _title, _track } };
         _activity = new AddonActivity("File copy", 12,
             Ui.Glyph("", 15, Ui.Teal), _percent, Ui.Glyph("", 13, Ui.Teal), expanded,
-            compactWidth: 220, expandedSize: new Size(380, 84), kind: "FileCopy");
+            compactWidth: 230, expandedSize: new Size(Ui.AlertWidth, 84), kind: "FileCopy") { Tint = Ui.Teal.Color };
         context.Manager.Register(_activity);
     }
 

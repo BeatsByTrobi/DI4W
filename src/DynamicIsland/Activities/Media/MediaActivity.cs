@@ -20,13 +20,16 @@ public sealed class MediaActivity : Activity
     private readonly DispatcherTimer _hideTimer;
     private readonly DispatcherTimer _progressTimer;
 
-    private readonly Border _leadingArt = Ui.Image(null, 22, 6);
-    private readonly Border _bubbleArt = Ui.Image(null, 24, 12);
-    private readonly Border _expandedArt = Ui.Image(null, 62, 14);
+    // Album art as the iPhone shows it: a small rounded square in the pill, a round one in the minimal bubble,
+    // and a 52 square with corners concentric to the island when expanded.
+    private readonly Border _leadingArt = Ui.Image(null, 24, 6);
+    private readonly Border _bubbleArt = Ui.Image(null, 25, 12.5);
+    private readonly Border _expandedArt = Ui.Image(null, Ui.IconSize, 14);
     private readonly WaveformView _compactWave = new(20, 14);
     private readonly WaveformView _expandedWave = new(24, 18);
-    private readonly TextBlock _title = Ui.Text("", 17, FontWeights.SemiBold, Ui.Primary);
+    private readonly TextBlock _title = Ui.Text("", 16, FontWeights.SemiBold, Ui.Primary);
     private readonly TextBlock _artist = Ui.Text("", 15, FontWeights.Normal, Ui.Grey);
+    private Color _accent = Colors.White;
     private readonly TextBlock _elapsed = Ui.Text("0:00", 12, FontWeights.Medium, Ui.Grey, tabular: true);
     private readonly TextBlock _remaining = Ui.Text("-0:00", 12, FontWeights.Medium, Ui.Grey, tabular: true);
     private readonly Border _progressTrack = new() { Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.Track, Cursor = Cursors.Hand };
@@ -64,8 +67,9 @@ public sealed class MediaActivity : Activity
     public override string? AccessibleDetail => string.Join(" – ", new[] { _title.Text, _artist.Text }.Where(t => !string.IsNullOrWhiteSpace(t)));
     public override int Priority => 10;
     public override string Kind => "Media";
-    public override double CompactWidth => 280;
-    public override Size ExpandedSize => new(440, 196);
+    public override double CompactWidth => 230;
+    public override Size ExpandedSize => new(Ui.AlertWidth, 164);
+    public override Color? Keyline => _accent;
 
     public override FrameworkElement Leading { get; }
     public override FrameworkElement Trailing { get; }
@@ -86,11 +90,12 @@ public sealed class MediaActivity : Activity
         _leadingArt.Background = brush;
         _bubbleArt.Background = brush;
         _expandedArt.Background = brush;
+        _accent = s.Accent;
         _compactWave.SetColor(s.Accent);
         _expandedWave.SetColor(s.Accent);
         _title.Text = s.Title;
         _artist.Text = s.Artist;
-        _playPauseIcon.Content = Ui.Shape(s.IsPlaying ? Icons.Pause : Icons.Play, 26, Ui.Primary);
+        _playPauseIcon.Content = Ui.Shape(s.IsPlaying ? Icons.Pause : Icons.Play, 24, Ui.Primary);
         _compactPlayPauseIcon.Content = Ui.Shape(s.IsPlaying ? Icons.Pause : Icons.Play, 12, Ui.Primary);
 
         WaveformView.SetPlaying(s.IsPlaying);
@@ -148,7 +153,7 @@ public sealed class MediaActivity : Activity
     private FrameworkElement BuildExpanded()
     {
         // Mirrors the iOS expanded music island: art + titles, waveform, scrubber, transport controls.
-        var root = new Grid { Margin = new Thickness(22, 20, 22, 14) };
+        var root = new Grid { Margin = new Thickness(16, 16, 16, 10) };
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -181,7 +186,7 @@ public sealed class MediaActivity : Activity
         root.Children.Add(top);
 
         // Row 1: elapsed | scrubber | remaining
-        var progress = new Grid { Margin = new Thickness(0, 16, 0, 0) };
+        var progress = new Grid { Margin = new Thickness(2, 14, 2, 0) };
         progress.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(42) });
         progress.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         progress.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(46) });
@@ -214,13 +219,13 @@ public sealed class MediaActivity : Activity
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0, 6, 0, 0),
+            Margin = new Thickness(0, 4, 0, 0),
         };
-        controls.Children.Add(Ui.Button(Ui.Shape(Icons.Previous, 30, Ui.Primary), () => _ = _service.Previous(), null, 54, 46, L.T("Previous")));
-        var pp = Ui.Button(_playPauseIcon, () => _ = _service.TogglePlayPause(), null, 54, 46, L.T("Play / pause"));
-        pp.Margin = new Thickness(28, 0, 28, 0);
+        controls.Children.Add(Ui.Button(Ui.Shape(Icons.Previous, 26, Ui.Primary), () => _ = _service.Previous(), null, 52, 44, L.T("Previous")));
+        var pp = Ui.Button(_playPauseIcon, () => _ = _service.TogglePlayPause(), null, 52, 44, L.T("Play / pause"));
+        pp.Margin = new Thickness(30, 0, 30, 0);
         controls.Children.Add(pp);
-        controls.Children.Add(Ui.Button(Ui.Shape(Icons.Next, 30, Ui.Primary), () => _ = _service.Next(), null, 54, 46, L.T("Next")));
+        controls.Children.Add(Ui.Button(Ui.Shape(Icons.Next, 26, Ui.Primary), () => _ = _service.Next(), null, 52, 44, L.T("Next")));
         Grid.SetRow(controls, 2);
         root.Children.Add(controls);
 

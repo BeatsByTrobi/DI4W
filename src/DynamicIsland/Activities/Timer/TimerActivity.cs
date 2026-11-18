@@ -26,7 +26,7 @@ public sealed class TimerActivity : Activity
     private readonly TextBlock _compactText;
     private readonly TextBlock _expandedText;
     private readonly ContentControl _pauseIcon;
-    private readonly Border _progressRing;
+    private readonly TextBlock _minimalText;
 
     public TimerActivity(ActivityManager manager, AppSettings settings)
     {
@@ -40,10 +40,12 @@ public sealed class TimerActivity : Activity
         _compactText = Ui.Text("0:00", 15, FontWeights.SemiBold, Ui.Orange, tabular: true);
         Trailing = _compactText;
 
-        _progressRing = new Border { Width = 22, Height = 22 };
-        Bubble = new Grid { Children = { _progressRing, Ui.Glyph(Icons.TimerGlyph, 12, Ui.Orange) } };
+        // Minimal: the time left, as the iPhone's Timer shows it (an oval up to 45 wide).
+        _minimalText = Ui.Text("0:00", 13, FontWeights.SemiBold, Ui.Orange, tabular: true);
+        _minimalText.HorizontalAlignment = HorizontalAlignment.Center;
+        Bubble = _minimalText;
 
-        _expandedText = Ui.Text("0:00", 46, FontWeights.Light, Ui.Orange, tabular: true);
+        _expandedText = Ui.Text("0:00", 44, FontWeights.Light, Ui.Orange, tabular: true);
         _pauseIcon = new ContentControl();
         Expanded = BuildExpanded();
     }
@@ -52,7 +54,9 @@ public sealed class TimerActivity : Activity
     public override int Priority => 30;
     public override string Kind => "Timer";
     public override double CompactWidth => 230;
-    public override Size ExpandedSize => new(400, 120);
+    public override double MinimalWidth => 45;
+    public override Color? Keyline => Ui.Orange.Color;
+    public override Size ExpandedSize => new(Ui.AlertWidth, 100);
 
     public override FrameworkElement Leading { get; }
     public override FrameworkElement Trailing { get; }
@@ -100,33 +104,14 @@ public sealed class TimerActivity : Activity
         var text = Ui.FormatTime(shown);
         _compactText.Text = text;
         _expandedText.Text = text;
+        _minimalText.Text = text;
+        _minimalText.FontSize = text.Length > 5 ? 10.5 : 13; // "1:02:03" still fits the oval
 
         var paused = !_stopwatch.IsRunning;
-        _compactText.Opacity = paused ? 0.55 : 1;
+        _compactText.Opacity = _minimalText.Opacity = paused ? 0.55 : 1;
         _expandedText.Opacity = paused ? 0.55 : 1;
         _pauseIcon.Content = Ui.Shape(paused ? Icons.Play : Icons.Pause, 15, Ui.Orange);
 
-        DrawRing(1 - remaining.TotalSeconds / _duration.TotalSeconds);
-    }
-
-    private void DrawRing(double progress)
-    {
-        // Small arc around the bubble icon showing elapsed fraction.
-        const double size = 22, stroke = 2.2, r = (size - stroke) / 2;
-        progress = Math.Clamp(1 - progress, 0.0001, 0.9999);
-        var angle = progress * 2 * Math.PI;
-        var start = new Point(size / 2, stroke / 2);
-        var end = new Point(size / 2 + r * Math.Sin(angle), size / 2 - r * Math.Cos(angle));
-        var fig = new PathFigure { StartPoint = start, IsClosed = false };
-        fig.Segments.Add(new ArcSegment(end, new Size(r, r), 0, angle > Math.PI, SweepDirection.Clockwise, true));
-        _progressRing.Child = new System.Windows.Shapes.Path
-        {
-            Data = new PathGeometry(new[] { fig }),
-            Stroke = Ui.Orange,
-            StrokeThickness = stroke,
-            StrokeStartLineCap = PenLineCap.Round,
-            StrokeEndLineCap = PenLineCap.Round,
-        };
     }
 
     private void Finish()
@@ -153,7 +138,7 @@ public sealed class TimerActivity : Activity
         pulse.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
 
         IslandAlert? alert = null;
-        var stop = Ui.CircleButton(Ui.Text(L.T("Stop"), 13, FontWeights.SemiBold, Brushes.Black), Ui.Orange, 46, () =>
+        var stop = Ui.CircleButton(Ui.Text(L.T("Stop"), 14, FontWeights.SemiBold, Brushes.Black), Ui.Orange, Ui.IconSize, () =>
         {
             if (alert is not null) _manager.DismissAlert(alert);
         });
@@ -164,6 +149,7 @@ public sealed class TimerActivity : Activity
             Content = Ui.AlertView(icon, L.T("Timer"), L.F("{0} is done", label), Ui.Orange, stop),
             Sticky = true,
             BreaksThroughQuiet = true,
+            Keyline = Ui.Orange.Color,
             OnDismissed = StopAlarm,
         };
         _manager.ShowAlert(alert);
@@ -196,13 +182,13 @@ public sealed class TimerActivity : Activity
     private FrameworkElement BuildExpanded()
     {
         // Layout follows the iOS timer live activity: round controls left, big orange countdown right.
-        var grid = new Grid { Margin = new Thickness(22, 16, 26, 16) };
+        var grid = new Grid { Margin = new Thickness(18, 16, 22, 16) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        var pause = Ui.CircleButton(_pauseIcon, Ui.OrangeDim, 50, TogglePause, L.T("Pause / resume"));
-        var cancel = Ui.CircleButton(Icons.Stroke(Icons.Close, 13, Ui.Primary, 2.4), Ui.Track, 50, Cancel, L.T("Cancel"));
+        var pause = Ui.CircleButton(_pauseIcon, Ui.OrangeDim, 52, TogglePause, L.T("Pause / resume"));
+        var cancel = Ui.CircleButton(Icons.Stroke(Icons.Close, 14, Ui.Primary, 2.4), Ui.Track, 52, Cancel, L.T("Cancel"));
         cancel.Margin = new Thickness(12, 0, 0, 0);
         buttons.Children.Add(pause);
         buttons.Children.Add(cancel);

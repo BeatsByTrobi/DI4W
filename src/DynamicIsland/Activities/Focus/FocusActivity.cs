@@ -51,7 +51,8 @@ public sealed class FocusActivity : Activity
     public override int Priority => 32;
     public override string Kind => "Focus";
     public override double CompactWidth => 230;
-    public override Size ExpandedSize => new(400, 120);
+    public override System.Windows.Media.Color? Keyline => ((System.Windows.Media.SolidColorBrush)Color).Color;
+    public override Size ExpandedSize => new(Ui.AlertWidth, 100);
 
     public override FrameworkElement Leading { get; }
     public override FrameworkElement Trailing { get; }
@@ -182,14 +183,14 @@ public sealed class FocusActivity : Activity
 
     private FrameworkElement BuildExpanded()
     {
-        var grid = new Grid { Margin = new Thickness(22, 16, 26, 16) };
+        var grid = new Grid { Margin = new Thickness(18, 16, 22, 16) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        var pause = Ui.CircleButton(_pauseIcon, Ui.ButtonBg, 44, TogglePause, L.T("Pause / resume"));
-        var skip = Ui.CircleButton(Ui.Shape(Icons.Next, 14, Ui.Primary), Ui.ButtonBg, 44, Skip, L.T("Skip to next"));
-        var stop = Ui.CircleButton(Icons.Stroke(Icons.Close, 12, Ui.Primary, 2.4), Ui.Track, 44, Stop, L.T("Stop"));
+        var pause = Ui.CircleButton(_pauseIcon, Ui.ButtonBg, 48, TogglePause, L.T("Pause / resume"));
+        var skip = Ui.CircleButton(Ui.Shape(Icons.Next, 14, Ui.Primary), Ui.ButtonBg, 48, Skip, L.T("Skip to next"));
+        var stop = Ui.CircleButton(Icons.Stroke(Icons.Close, 12, Ui.Primary, 2.4), Ui.Track, 48, Stop, L.T("Stop"));
         skip.Margin = stop.Margin = new Thickness(10, 0, 0, 0);
         buttons.Children.Add(pause);
         buttons.Children.Add(skip);

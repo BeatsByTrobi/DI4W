@@ -20,6 +20,7 @@ namespace DynamicIsland.Activities.Api;
 public sealed class IslandApi
 {
     private const int MaxProgress = 5;
+    private const double BarWidth = Ui.AlertWidth - 2 * 18;
     private const int MaxAlertsPerMinute = 30;
     private static readonly TimeSpan ProgressExpiry = TimeSpan.FromMinutes(15);
 
@@ -215,7 +216,7 @@ public sealed class IslandApi
         item.Percent.Foreground = item.Title.Foreground = item.Color;
         item.Ring.Child = Ring(18, 2.6, value ?? 0.25, item.Color);
         item.BubbleRing.Child = Ring(22, 2.4, value ?? 0.25, item.Color);
-        item.Fill.Width = 356 * (value ?? 0);
+        item.Fill.Width = BarWidth * (value ?? 0);
         item.Fill.Background = item.Color;
         item.Updated = DateTime.UtcNow;
         item.Activity.Show();
@@ -230,10 +231,10 @@ public sealed class IslandApi
         var title = Ui.Text(id, 15, FontWeights.SemiBold, Ui.Blue);
         var detail = Ui.Text("", 13, FontWeights.Normal, Ui.Grey);
         var fill = new Border { Height = 6, CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left };
-        var track = new Border { Width = 356, Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.Track, Child = fill, Margin = new Thickness(0, 10, 0, 0) };
-        var expanded = new StackPanel { Margin = new Thickness(22, 16, 22, 14), Children = { title, detail, track } };
+        var track = new Border { Width = BarWidth, Height = 6, CornerRadius = new CornerRadius(3), Background = Ui.Track, Child = fill, Margin = new Thickness(0, 10, 0, 0) };
+        var expanded = new StackPanel { Margin = new Thickness(18, 16, 18, 14), Children = { title, detail, track } };
 
-        var activity = new AddonActivity($"API: {id}", 14, ring, percent, bubble, expanded, compactWidth: 220, expandedSize: new Size(400, 100), kind: "Api");
+        var activity = new AddonActivity($"API: {id}", 14, ring, percent, bubble, expanded, compactWidth: 230, expandedSize: new Size(Ui.AlertWidth, 100), kind: "Api");
         _manager.Register(activity);
         return new ProgressItem { Activity = activity, Ring = ring, BubbleRing = bubble, Percent = percent, Title = title, Detail = detail, Fill = fill };
     }

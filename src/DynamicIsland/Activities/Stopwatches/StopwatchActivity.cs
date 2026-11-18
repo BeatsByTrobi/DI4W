@@ -17,6 +17,7 @@ public sealed class StopwatchActivity : Activity
     private readonly TextBlock _compactText = Ui.Text("0:00", 15, FontWeights.SemiBold, Ui.Amber, tabular: true);
     private readonly TextBlock _expandedText = Ui.Text("0:00.0", 44, FontWeights.Light, Ui.Amber, tabular: true);
     private readonly ContentControl _pauseIcon = new();
+    private readonly TextBlock _minimalText;
 
     public StopwatchActivity()
     {
@@ -24,7 +25,10 @@ public sealed class StopwatchActivity : Activity
         _tick.Tick += (_, _) => Update();
         Leading = Ui.Glyph(Glyph, 15, Ui.Amber);
         Trailing = _compactText;
-        Bubble = Ui.Glyph(Glyph, 13, Ui.Amber);
+        // Minimal: the running time, in an oval up to 45 wide.
+        _minimalText = Ui.Text("0:00", 13, FontWeights.SemiBold, Ui.Amber, tabular: true);
+        _minimalText.HorizontalAlignment = HorizontalAlignment.Center;
+        Bubble = _minimalText;
         Expanded = BuildExpanded();
     }
 
@@ -32,7 +36,9 @@ public sealed class StopwatchActivity : Activity
     public override int Priority => 28;
     public override string Kind => "Stopwatch";
     public override double CompactWidth => 230;
-    public override Size ExpandedSize => new(400, 120);
+    public override double MinimalWidth => 45;
+    public override System.Windows.Media.Color? Keyline => Ui.Amber.Color;
+    public override Size ExpandedSize => new(Ui.AlertWidth, 100);
 
     public override FrameworkElement Leading { get; }
     public override FrameworkElement Trailing { get; }
@@ -66,22 +72,23 @@ public sealed class StopwatchActivity : Activity
     private void Update()
     {
         var t = _stopwatch.Elapsed;
-        _compactText.Text = Ui.FormatTime(t);
+        _compactText.Text = _minimalText.Text = Ui.FormatTime(t);
+        _minimalText.FontSize = _minimalText.Text.Length > 5 ? 10.5 : 13;
         _expandedText.Text = $"{Ui.FormatTime(t)}.{t.Milliseconds / 100}";
         var paused = !_stopwatch.IsRunning;
-        _compactText.Opacity = _expandedText.Opacity = paused ? 0.55 : 1;
+        _compactText.Opacity = _expandedText.Opacity = _minimalText.Opacity = paused ? 0.55 : 1;
         _pauseIcon.Content = Ui.Shape(paused ? Icons.Play : Icons.Pause, 15, Ui.Amber);
     }
 
     private FrameworkElement BuildExpanded()
     {
-        var grid = new Grid { Margin = new Thickness(22, 16, 26, 16) };
+        var grid = new Grid { Margin = new Thickness(18, 16, 22, 16) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        var pause = Ui.CircleButton(_pauseIcon, Ui.AmberDim, 50, TogglePause, L.T("Pause / resume"));
-        var stop = Ui.CircleButton(Icons.Stroke(Icons.Close, 13, Ui.Primary, 2.4), Ui.Track, 50, Stop, L.T("Stop"));
+        var pause = Ui.CircleButton(_pauseIcon, Ui.AmberDim, 52, TogglePause, L.T("Pause / resume"));
+        var stop = Ui.CircleButton(Icons.Stroke(Icons.Close, 14, Ui.Primary, 2.4), Ui.Track, 52, Stop, L.T("Stop"));
         stop.Margin = new Thickness(12, 0, 0, 0);
         buttons.Children.Add(pause);
         buttons.Children.Add(stop);

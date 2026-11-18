@@ -13,14 +13,14 @@ public sealed class AddonActivity : Activity
     private readonly Size _expandedSize;
 
     public AddonActivity(string name, int priority, FrameworkElement leading, FrameworkElement trailing,
-                         FrameworkElement bubble, FrameworkElement expanded, double compactWidth = 250, Size? expandedSize = null,
+                         FrameworkElement bubble, FrameworkElement expanded, double compactWidth = 230, Size? expandedSize = null,
                          string? kind = null)
     {
         _name = name;
         Kind = kind ?? name;
         _priority = priority;
         _compactWidth = compactWidth;
-        _expandedSize = expandedSize ?? new Size(400, 100);
+        _expandedSize = expandedSize ?? new Size(UI.Ui.AlertWidth, 100);
         Leading = leading;
         Trailing = trailing;
         Bubble = bubble;
@@ -32,6 +32,10 @@ public sealed class AddonActivity : Activity
     public override string Kind { get; }
     public override double CompactWidth => _compactWidth;
     public override Size ExpandedSize => _expandedSize;
+
+    /// <summary>The key line's tint while this activity shows.</summary>
+    public System.Windows.Media.Color? Tint { get; init; }
+    public override System.Windows.Media.Color? Keyline => Tint;
 
     public override FrameworkElement Leading { get; }
     public override FrameworkElement Trailing { get; }

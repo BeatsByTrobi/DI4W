@@ -15,14 +15,14 @@ namespace DynamicIsland.Activities.Timer;
 /// </summary>
 public static class TimerPicker
 {
-    public static readonly Size PanelSize = new(420, 170);
+    public static readonly Size PanelSize = new(Ui.AlertWidth, 170);
     private static readonly int[] PresetMinutes = { 1, 3, 5, 10, 15, 25 };
 
     /// <param name="recent">Builds the Recent tab (the latest alerts); <paramref name="startTab"/> 3 opens on it.</param>
     public static FrameworkElement Build(Action<TimeSpan> startTimer, Action startFocus, Action startStopwatch, AddonSettings options,
                                          Func<FrameworkElement> recent, int startTab = 0)
     {
-        var root = new Grid { Margin = new Thickness(20, 14, 20, 16) };
+        var root = new Grid { Margin = new Thickness(16, 14, 16, 16) };
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 

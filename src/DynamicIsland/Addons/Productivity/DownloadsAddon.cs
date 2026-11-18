@@ -29,7 +29,7 @@ public sealed class DownloadsAddon : Addon
 
     private readonly Dictionary<string, Download> _active = new(StringComparer.OrdinalIgnoreCase);
     private readonly TextBlock _compact = Ui.Text("", 14, FontWeights.SemiBold, Ui.Blue, tabular: true);
-    private readonly StackPanel _list = new() { Margin = new Thickness(20, 16, 22, 14) };
+    private readonly StackPanel _list = new() { Margin = new Thickness(18, 16, 20, 14) };
     private readonly AddonActivity _activity;
     private FileSystemWatcher? _watcher;
     private DispatcherTimer? _tick;
@@ -38,7 +38,7 @@ public sealed class DownloadsAddon : Addon
     {
         _activity = new AddonActivity("Downloads", 15,
             Ui.Glyph("", 15, Ui.Blue), _compact, Ui.Glyph("", 13, Ui.Blue), _list,
-            compactWidth: 240, expandedSize: new Size(400, 120), kind: "Downloads");
+            compactWidth: 230, expandedSize: new Size(Ui.AlertWidth, 120), kind: "Downloads") { Tint = Ui.Blue.Color };
         context.Manager.Register(_activity);
     }
 
