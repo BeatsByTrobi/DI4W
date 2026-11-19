@@ -1,3 +1,0 @@
-// The island's icon (resource 1, also the tray icon) and its manifest.
-1 ICON "island.ico"
-1 24 "island.manifest"
