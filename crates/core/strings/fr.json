@@ -13,7 +13,6 @@
   "Quit": "Quitter",
   "Update available": "Mise à jour disponible",
   "Version {0} is ready. Click to install.": "La version {0} est prête. Cliquez pour l'installer.",
-  "The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or publish both apps with: dotnet publish src/DynamicIsland -c Release -o publish": "L'application Paramètres (DynamicIsland.Settings.exe) est introuvable. Réinstallez Dynamic Island ou publiez les deux applications avec : dotnet publish src/DynamicIsland -c Release -o publish",
   "Timer": "Minuteur",
   "Focus": "Concentration",
   "Stopwatch": "Chronomètre",
@@ -393,5 +392,6 @@
   "Maximize": "Agrandir",
   "Open Navigation": "Ouvrir la navigation",
   "Close Navigation": "Fermer la navigation",
-  "OK": "OK"
+  "OK": "OK",
+  "The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or build both apps with: tools\\build.ps1 -Out publish": "L'application Paramètres (DynamicIsland.Settings.exe) est introuvable. Réinstallez Dynamic Island ou créez les deux applications avec : tools\\build.ps1 -Out publish"
 }

@@ -596,7 +596,7 @@ pub fn open_settings(args: &[&str]) {
     }
     let Some(exe) = find_settings_app() else {
         di4w_core::log::error("Settings app not found next to the island");
-        let text = l::t("The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or publish both apps with: dotnet publish src/DynamicIsland -c Release -o publish").encode_wide_null();
+        let text = l::t("The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or build both apps with: tools\\build.ps1 -Out publish").encode_wide_null();
         let caption = l::t("Dynamic Island").encode_wide_null();
         unsafe {
             MessageBoxW(None, PCWSTR(text.as_ptr()), PCWSTR(caption.as_ptr()), MB_OK | MB_ICONWARNING);

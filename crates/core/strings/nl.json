@@ -13,7 +13,6 @@
   "Quit": "Afsluiten",
   "Update available": "Update beschikbaar",
   "Version {0} is ready. Click to install.": "Versie {0} staat klaar. Klik om te installeren.",
-  "The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or publish both apps with: dotnet publish src/DynamicIsland -c Release -o publish": "De instellingen-app (DynamicIsland.Settings.exe) is niet gevonden. Installeer Dynamic Island opnieuw, of publiceer beide apps met: dotnet publish src/DynamicIsland -c Release -o publish",
   "Timer": "Timer",
   "Focus": "Focus",
   "Stopwatch": "Stopwatch",
@@ -393,5 +392,6 @@
   "Maximize": "Maximaliseren",
   "Open Navigation": "Navigatie openen",
   "Close Navigation": "Navigatie sluiten",
-  "OK": "OK"
+  "OK": "OK",
+  "The settings app (DynamicIsland.Settings.exe) was not found. Reinstall Dynamic Island, or build both apps with: tools\\build.ps1 -Out publish": "De instellingen-app (DynamicIsland.Settings.exe) is niet gevonden. Installeer Dynamic Island opnieuw, of bouw beide apps met: tools\\build.ps1 -Out publish"
 }
