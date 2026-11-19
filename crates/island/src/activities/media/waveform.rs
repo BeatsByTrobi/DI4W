@@ -66,8 +66,8 @@ fn tick() {
             }
         }
         let mut settled = true;
-        for i in 0..BAND_COUNT {
-            let target = s.shared[ORDER[i]];
+        for (i, &band) in ORDER.iter().enumerate() {
+            let target = s.shared[band];
             s.shown[i] += (target - s.shown[i]) * 0.45;
             if (target - s.shown[i]).abs() > 0.01 {
                 settled = false;

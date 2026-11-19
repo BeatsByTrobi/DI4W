@@ -133,7 +133,7 @@ fn read(hwnd: HWND) -> Option<Content> {
     unsafe {
         if IsClipboardFormatAvailable(CF_UNICODETEXT.0 as u32).is_ok() {
             let bytes = data(CF_UNICODETEXT.0 as u32)?;
-            let units: Vec<u16> = bytes.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).take_while(|&u| u != 0).collect();
+            let units: Vec<u16> = bytes.as_chunks::<2>().0.iter().map(|c| u16::from_le_bytes(*c)).take_while(|&u| u != 0).collect();
             return Some(Content::Text(String::from_utf16_lossy(&units)));
         }
         if IsClipboardFormatAvailable(CF_DIB.0 as u32).is_ok() {

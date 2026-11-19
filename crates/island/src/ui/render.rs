@@ -119,6 +119,7 @@ impl Renderer {
 
     /// Draws a frame of `w` × `h` pixels with `draw` (in DIPs, scaled by `scale` to pixels) and shows it on the
     /// layered window, its top-left at `pos` (screen pixels).
+    #[allow(clippy::too_many_arguments)]
     pub fn present(&mut self, hwnd: HWND, pos: POINT, w: u32, h: u32, scale: f64, state: &PaintState, draw: &mut dyn FnMut(&mut Painter)) -> Result<()> {
         if w == 0 || h == 0 {
             return Ok(());

@@ -13,7 +13,7 @@ pub fn normal() -> HICON {
     let size = unsafe { GetSystemMetrics(SM_CXSMICON) }.max(16);
     unsafe {
         let instance: HINSTANCE = GetModuleHandleW(None).unwrap_or_default().into();
-        LoadImageW(Some(instance), PCWSTR(1 as *const u16), IMAGE_ICON, size, size, LR_DEFAULTCOLOR)
+        LoadImageW(Some(instance), PCWSTR(std::ptr::without_provenance(1)), IMAGE_ICON, size, size, LR_DEFAULTCOLOR)
             .map(|h| HICON(h.0))
             .unwrap_or_else(|_| LoadIconW(None, IDI_APPLICATION).unwrap_or_default())
     }

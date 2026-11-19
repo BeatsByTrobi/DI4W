@@ -264,7 +264,7 @@ fn load_art(reference: &IRandomAccessStreamReference) -> Option<Bitmap> {
 pub fn dominant_color(art: &Bitmap) -> Color {
     let small = image::resample(art, 16, 16);
     let (mut r, mut g, mut b, mut total) = (0.0, 0.0, 0.0, 0.0);
-    for px in small.pixels.chunks_exact(4) {
+    for px in small.pixels.as_chunks::<4>().0 {
         let (pb, pg, pr) = (px[0] as f64 / 255.0, px[1] as f64 / 255.0, px[2] as f64 / 255.0);
         let max = pr.max(pg).max(pb);
         let min = pr.min(pg).min(pb);

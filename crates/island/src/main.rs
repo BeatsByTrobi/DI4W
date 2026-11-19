@@ -3,6 +3,8 @@
 //! The island window and everything it shows live on one UI thread ([`rt`]); [`app`] starts it all. The settings
 //! app (DynamicIsland.Settings.exe) writes `settings.json`, which the island watches (see `di4w_core`).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// Callbacks stored for the UI thread (`Rc<dyn Fn(...)>` in maps and cells) are clearer spelled out than aliased.
+#![allow(clippy::type_complexity)]
 
 mod accessibility;
 mod activities;

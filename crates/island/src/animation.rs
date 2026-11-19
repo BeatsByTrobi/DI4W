@@ -150,10 +150,8 @@ mod tests {
 
     #[test]
     fn eases_start_and_end_where_they_should() {
-        for f in [cubic_out] {
-            assert!(f(0.0).abs() < 1e-9);
-            assert!((f(1.0) - 1.0).abs() < 1e-9);
-        }
+        assert!(cubic_out(0.0).abs() < 1e-9);
+        assert!((cubic_out(1.0) - 1.0).abs() < 1e-9);
         assert!((back_out(1.0, 0.35) - 1.0).abs() < 1e-9);
         assert!((0.0..1.0).any_overshoot(|t| back_out(t, 0.35) > 1.0));
     }

@@ -139,15 +139,15 @@ pub fn resample(b: &Bitmap, w: u32, h: u32) -> Bitmap {
             for sy in y0..y1 {
                 for sx in x0..x1 {
                     let i = ((sy * b.w + sx) * 4) as usize;
-                    for c in 0..4 {
-                        sum[c] += b.pixels[i + c] as u64;
+                    for (c, total) in sum.iter_mut().enumerate() {
+                        *total += b.pixels[i + c] as u64;
                     }
                 }
             }
             let n = ((y1 - y0) * (x1 - x0)) as u64;
             let o = ((y * w + x) * 4) as usize;
-            for c in 0..4 {
-                out[o + c] = (sum[c] / n) as u8;
+            for (c, total) in sum.iter().enumerate() {
+                out[o + c] = (total / n) as u8;
             }
         }
     }

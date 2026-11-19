@@ -318,7 +318,7 @@ fn run_timers() {
         // A repeating timer stopped by an earlier one in this batch doesn't run.
         let alive = once || TIMERS.with(|t| t.borrow().contains_key(&id));
         if alive && let Ok(mut f) = action.try_borrow_mut() {
-            guard(|| f());
+            guard(&mut *f);
         }
     }
     arm();
@@ -463,7 +463,7 @@ fn parse_changes(buffer: &[u32], len: usize, folder: &Path) -> Vec<Change> {
         let name_len = u32::from_le_bytes(bytes[offset + 8..offset + 12].try_into().unwrap()) as usize;
         let start = offset + 12;
         let end = (start + name_len).min(bytes.len());
-        let units: Vec<u16> = bytes[start..end].chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+        let units: Vec<u16> = bytes[start..end].as_chunks::<2>().0.iter().map(|c| u16::from_le_bytes(*c)).collect();
         let path = folder.join(String::from_utf16_lossy(&units));
         match FILE_ACTION(action) {
             FILE_ACTION_ADDED => out.push(Change::Created(path)),
