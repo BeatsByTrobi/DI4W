@@ -86,33 +86,34 @@ pub fn create(tip: &str, on_event: impl Fn(Event) + 'static) {
 
 /// Normal or paused (faded, with an orange pause badge), with a matching tooltip.
 pub fn set_paused(paused: bool, tip: &str) {
-    TRAY.with(|t| {
-        if let Some(tray) = t.borrow_mut().as_mut() {
-            tray.is_paused = paused;
-            tray.tip = tip.into();
-            let d = data(tray);
-            unsafe {
-                let _ = Shell_NotifyIconW(NIM_MODIFY, &d);
-            }
-        }
+    let d = TRAY.with(|t| {
+        let mut t = t.borrow_mut();
+        let tray = t.as_mut()?;
+        tray.is_paused = paused;
+        tray.tip = tip.into();
+        Some(data(tray))
     });
+    if let Some(d) = d {
+        unsafe {
+            let _ = Shell_NotifyIconW(NIM_MODIFY, &d);
+        }
+    }
 }
 
 pub fn remove() {
-    TRAY.with(|t| {
-        if let Some(tray) = t.borrow_mut().take() {
-            let d = data(&tray);
-            unsafe {
-                let _ = Shell_NotifyIconW(NIM_DELETE, &d);
-                let _ = DestroyWindow(tray.hwnd);
-            }
+    // Out of the cell first: deleting the icon and the window sends messages to `proc`, which reads it.
+    if let Some(tray) = TRAY.with(|t| t.borrow_mut().take()) {
+        let d = data(&tray);
+        unsafe {
+            let _ = Shell_NotifyIconW(NIM_DELETE, &d);
+            let _ = DestroyWindow(tray.hwnd);
         }
-    });
+    }
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     let handled = guard(|| -> Option<LRESULT> {
-        let (callback, taskbar_created) = TRAY.with(|t| t.borrow().as_ref().map(|t| (t.on_event.clone(), t.taskbar_created)))?;
+        let (callback, taskbar_created) = TRAY.with(|t| t.try_borrow().ok()?.as_ref().map(|t| (t.on_event.clone(), t.taskbar_created)))?;
         if msg == taskbar_created {
             // Explorer restarted: the icon is gone, add it again.
             TRAY.with(|t| {

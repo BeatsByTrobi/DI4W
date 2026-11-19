@@ -1538,6 +1538,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
             }
             WM_GETOBJECT => accessibility::get_object(hwnd, wparam, lparam),
             WM_CLOSE => {
+                di4w_core::log::info("The island window was asked to close; quitting");
                 // Closing the island window (installer upgrade/uninstall, Windows shutting down) quits the whole app
                 // cleanly, so the tray icon, port and settings are released properly.
                 let f = island.on_close.borrow().clone();
@@ -1548,6 +1549,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
             }
             WM_QUERYENDSESSION => Some(LRESULT(1)),
             WM_ENDSESSION if wparam.0 != 0 => {
+                di4w_core::log::info("Windows is shutting down; quitting");
                 let f = island.on_close.borrow().clone();
                 if let Some(f) = f {
                     f();

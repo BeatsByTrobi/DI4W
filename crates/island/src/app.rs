@@ -159,7 +159,7 @@ pub fn run(restarted: bool) -> bool {
             a.announce_update();
         }
     }));
-    *island.on_close.borrow_mut() = Some(Rc::new(rt::quit));
+    *island.on_close.borrow_mut() = Some(Rc::new(|| rt::quit("the island window was closed")));
     // The settings app's Preview buttons send "preview:Battery" (WM_COPYDATA) to show a sample pop-up.
     island.add_hook(|msg, _, lparam| {
         const WM_COPYDATA: u32 = 0x004A;
@@ -224,14 +224,23 @@ pub fn run(restarted: bool) -> bool {
 
     rt::run();
 
-    // Shutting down.
+    // Shutting down: out of sight at once, and never stuck (a hung driver call can't keep a zombie island around).
+    std::thread::spawn(|| {
+        std::thread::sleep(Duration::from_secs(5));
+        di4w_core::log::error("Shutting down took too long; exiting");
+        unsafe {
+            let _ = windows::Win32::System::Threading::TerminateProcess(windows::Win32::System::Threading::GetCurrentProcess(), 0);
+        }
+    });
     let restart = this.restart.get();
+    island.hide();
+    tray::remove();
+    menu::close_all();
     this.watcher.borrow_mut().take();
     this.server.borrow_mut().take();
     this.addons.shutdown();
     crate::activities::media::meter::stop();
-    tray::remove();
-    menu::close_all();
+    di4w_core::log::info("Stopped");
     APP.with(|a| a.borrow_mut().take());
     drop(instance);
     if restart && let Ok(exe) = std::env::current_exe() {
@@ -249,7 +258,7 @@ fn listen_for_quit() {
         let event = HANDLE(raw as *mut _);
         if unsafe { WaitForSingleObject(event, INFINITE) } == WAIT_OBJECT_0 {
             di4w_core::log::info("Asked to quit (update)");
-            rt::post(rt::quit);
+            rt::post(|| rt::quit("asked to by the settings app (update)"));
         }
     });
 }
@@ -368,7 +377,7 @@ impl App {
         items.push(Item::new(l::t("Recent alerts…"), Some(icons::RECENT), call(|a| a.show_recent())));
         items.push(Item::Separator);
         items.push(Item::new(l::t("Check for updates…"), Some(icons::SYNC), || open_settings(&["--page", "About"])));
-        items.push(Item::new(l::t("Quit"), Some(icons::POWER), rt::quit));
+        items.push(Item::new(l::t("Quit"), Some(icons::POWER), || rt::quit("Quit in the menu")));
         items
     }
 
@@ -454,7 +463,7 @@ impl App {
         if needs_restart {
             di4w_core::log::info("Restarting to apply settings");
             self.restart.set(true);
-            rt::quit();
+            rt::quit("restarting for new settings");
         }
     }
 
@@ -467,7 +476,7 @@ impl App {
         }
         di4w_core::log::info("Windows switched between light and dark; restarting in the new colors");
         self.restart.set(true);
-        rt::quit();
+        rt::quit("restarting in the new colors");
     }
 
     // ───────────────────────────── crash reports ─────────────────────────────

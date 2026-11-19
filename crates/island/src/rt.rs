@@ -349,8 +349,9 @@ pub fn run() {
     }
 }
 
-/// Ends the message loop (Application.Shutdown).
-pub fn quit() {
+/// Ends the message loop (Application.Shutdown); `reason` goes to the log.
+pub fn quit(reason: &str) {
+    di4w_core::log::info(format!("Quitting: {reason}"));
     unsafe { PostQuitMessage(0) };
 }
 

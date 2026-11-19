@@ -36,9 +36,17 @@ fn main() {
     }));
 
     let restarted = std::env::args().any(|a| a == "--restart");
-    if std::panic::catch_unwind(|| app::run(restarted)).is_err() {
-        let details = LAST_PANIC.lock().unwrap_or_else(|e| e.into_inner()).take().unwrap_or_else(|| "Unknown error".into());
-        di4w_core::crash::write(&details);
-        std::process::exit(1);
+    let code = match std::panic::catch_unwind(|| app::run(restarted)) {
+        Ok(_) => 0,
+        Err(_) => {
+            let details = LAST_PANIC.lock().unwrap_or_else(|e| e.into_inner()).take().unwrap_or_else(|| "Unknown error".into());
+            di4w_core::crash::write(&details);
+            1
+        }
+    };
+    // Everything is released by now (tray icon, port, mutex, settings). End the process right here: the system DLLs'
+    // own shutdown (audio, notifications, Direct3D) can leave a terminating process stuck in the kernel otherwise.
+    unsafe {
+        let _ = windows::Win32::System::Threading::TerminateProcess(windows::Win32::System::Threading::GetCurrentProcess(), code);
     }
 }
