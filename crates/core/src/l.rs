@@ -5,8 +5,8 @@
 //! l::f("In {0} min", &[&minutes])  // "Over 5 min"
 //! ```
 //!
-//! The tables live in `strings/<lang>.json`, keyed by the English text. Always call these as `l::t("…")` and
-//! `l::f("…", …)` with the English text as a literal (in the settings app's `.slint` files: `L.t("…")`), so the
+//! The tables live in `strings/<lang>.json`, keyed by the English text. Always call `l::t` and `l::f` with the
+//! English text as a string literal (in the settings app's `.slint` files: `L.t` with a literal), so the
 //! translation tests can find every text: each needs an entry in every language, and an entry whose English text
 //! is gone from the code fails the tests too.
 //!
