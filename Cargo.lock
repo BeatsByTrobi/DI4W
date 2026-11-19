@@ -1047,7 +1047,7 @@ dependencies = [
 
 [[package]]
 name = "di4w-core"
-version = "1.5.2"
+version = "2.0.0"
 dependencies = [
  "chrono",
  "regex",
@@ -1059,7 +1059,7 @@ dependencies = [
 
 [[package]]
 name = "di4w-island"
-version = "1.5.2"
+version = "2.0.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1078,7 +1078,7 @@ dependencies = [
 
 [[package]]
 name = "di4w-settings"
-version = "1.5.2"
+version = "2.0.0"
 dependencies = [
  "chrono",
  "di4w-core",
