@@ -907,9 +907,9 @@
       <div class="head"><i></i><i></i><i></i><span>~/code</span></div>
 <pre><span class="p">$</span> <span class="c">gh repo fork aangeraakt/DI4W --clone</span>
 <span class="ok">✓</span> Cloned DI4W into ./DI4W
-<span class="p">$</span> <span class="c">cd DI4W &amp;&amp; dotnet test tests/DynamicIsland.Tests</span>
-<span class="ok">Passed!</span> - Failed: 0, Passed: 90
-<span class="p">$</span> <span class="c">dotnet run --project src/DynamicIsland</span>
+<span class="p">$</span> <span class="c">cd DI4W &amp;&amp; cargo test --workspace</span>
+<span class="ok">Passed!</span> - Failed: 0, Passed: 108
+<span class="p">$</span> <span class="c">cargo run --release -p di4w-island</span>
 <span class="b">▲</span> The island is at the top of your screen
 <span class="p">$</span> <span class="cursor"></span></pre>
     </div>
