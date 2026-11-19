@@ -26,13 +26,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Test
-        run: cargo test --workspace --locked -- --skip no_translation_is_left_over
-
-      # Fails while the island is still being rewritten (its old texts are still in the translation tables);
-      # move it back into the step above once it passes.
-      - name: Test that no translation is left over
-        continue-on-error: true
-        run: cargo test -p di4w-core --test translations --locked no_translation_is_left_over
+        run: cargo test --workspace --locked
 
       - name: Build app (island + settings app)
         shell: pwsh
