@@ -844,7 +844,8 @@ impl Island {
             let bubble_left = pill_right + BUBBLE_GAP * split - (1.0 - split.min(1.0)) * bw * 0.8;
             let scale = 0.45 + 0.55 * split;
             let bubble_rect = Rect::new(bubble_left, top + (h - BUBBLE_SIZE) / 2.0, bw, BUBBLE_SIZE);
-            let neck = neck(pill_right, bubble_left + bw * (1.0 - scale) / 2.0, top + h / 2.0, h.min(BUBBLE_SIZE * scale) / 2.0);
+            // Only while the bubble is out: tucked inside the pill, the neck would cover the trailing content.
+            let neck = if split > 0.01 { neck(pill_right, bubble_left + bw * (1.0 - scale) / 2.0, top + h / 2.0, h.min(BUBBLE_SIZE * scale) / 2.0) } else { None };
             let indicators_x = pill_right + BUBBLE_GAP + split.min(1.0) * (bw + BUBBLE_GAP);
             let keyline = if light {
                 LIGHT_KEYLINE
@@ -1210,6 +1211,7 @@ impl Island {
                 && let Some((k, action)) = self.button_at(p)
                 && k == key {
                     action();
+                    self.request_redraw();
                 }
             return;
         }
