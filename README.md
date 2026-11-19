@@ -32,7 +32,7 @@ winget install aangeraakt.DynamicIsland
 
 Or grab the **.msi** from the [latest release](https://github.com/aangeraakt/DI4W/releases/latest) (`win-x64`, or `win-arm64` for Snapdragon). No admin rights needed.
 
-> Requires Windows 10 (2004+) or 11 and the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0). The installer tells you if it's missing.
+> Requires Windows 10 (2004+) or 11. Nothing else to install.
 
 ## Features
 
@@ -64,7 +64,7 @@ Turn each one on or off under **Settings → Add-ons**.
 - **Spring animations.** It bounces between sizes and squeezes when you press it.
 - **Two at once.** A second activity buds off into its own bubble.
 - **Stays out of the way.** It never steals focus and hides during fullscreen games and videos.
-- **Lightweight.** Native C# / WPF with a WinUI 3 settings app.
+- **Lightweight.** Native Rust with Direct2D, and a Slint settings app. No runtime needed.
 - **Plus:** dark/light theme, multi-monitor, screen reader support, quiet hours, recent alerts, settings backup, auto-updates.
 - **Languages:** English, Dutch, German and French.
 
@@ -122,34 +122,34 @@ Only local programs can connect; web pages are refused. Port and on/off under **
 
 ## Build from source
 
-Needs the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+Needs [Rust](https://rustup.rs/) (stable, MSVC toolchain).
 
 ```bash
 git clone https://github.com/aangeraakt/DI4W.git
 cd DI4W
-dotnet run --project src/DynamicIsland -c Release   # run
-dotnet test tests/DynamicIsland.Tests              # test
-dotnet publish src/DynamicIsland -c Release -o publish
+cargo run --release -p di4w-island                 # run
+cargo test --workspace                             # test
+powershell -File tools/build.ps1 -Out publish      # build both apps, laid out as shipped
 ```
 
 <details>
 <summary><b>Project structure</b></summary>
 
 ```
-src/DynamicIsland/            the island (WPF)
-├─ IslandWindow.xaml(.cs)     window, shape, springs, input
-├─ Core/                      Activity base class, ActivityManager
-├─ Activities/                Media, Timer, Focus, Stopwatch, Notifications, Api
-├─ Addons/                    optional features, one switch each
-├─ Settings/                  settings.json and startup
-└─ UI/                        colors, fonts, icons, shapes
-src/DynamicIsland.Settings/   settings app (WinUI 3)
-installer/                    WiX .msi
-tests/DynamicIsland.Tests/    xUnit tests
-tools/                        island.ps1, release and winget scripts
+crates/core/        shared: settings.json, translations, updates, displays
+├─ strings/         nl, de and fr translations
+crates/island/      the island (DynamicIsland.exe)
+├─ island.rs        window, shape, springs, input
+├─ model/           Activity trait, ActivityManager, alert queue
+├─ activities/      Media, Timer, Focus, Stopwatch, Notifications, Api
+├─ addons/          optional features, one switch each
+└─ ui/              colors, fonts, icons, Direct2D drawing
+crates/settings/    settings app (Slint)
+installer/          WiX .msi
+tools/              build, release and winget scripts, island.ps1
 ```
 
-**New activity:** subclass `Core/Activity`, provide `Leading`, `Trailing`, `Bubble` and `Expanded`, then register it in `App.xaml.cs`.
+**New activity:** implement `model::Activity` (`leading`, `trailing`, `bubble`, `expanded`), then register it in `app.rs`.
 
 </details>
 
@@ -160,7 +160,7 @@ tools/                        island.ps1, release and winget scripts
 powershell -ExecutionPolicy Bypass -File tools/publish-release.ps1 -Version 2.0.0
 ```
 
-Builds x64 and Arm64 zips and installers, tags, publishes the GitHub release and submits to winget. Options: `-Draft`, `-NotesFile notes.md`, `-NoArm64`, `-NoWinget`. Needs the [GitHub CLI](https://cli.github.com/).
+Builds x64 and Arm64 zips and installers, tags, publishes the GitHub release and submits to winget. Options: `-Draft`, `-NotesFile notes.md`, `-NoArm64`, `-NoWinget`. Needs the [GitHub CLI](https://cli.github.com/) and the [.NET SDK](https://dotnet.microsoft.com/download) (WiX builds the installer with it).
 
 **Signing:** set `DI4W_SIGN_THUMBPRINT`, or `DI4W_TRUSTED_SIGNING_METADATA` and `DI4W_TRUSTED_SIGNING_DLIB` for [Azure Trusted Signing](https://learn.microsoft.com/azure/trusted-signing/). Without either, the build is unsigned.
 
